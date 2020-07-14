@@ -23,7 +23,7 @@ namespace OnlineChat.Site.WebApi
 #if DEBUG
         @"https://localhost:44305/api/";
 #else
-        @"https://reenbitchatwebapi.azurewebsites.net/api/";
+        @"https://onlinechatwebapi.azurewebsites.net/api/";
 #endif
 
         public WebApiClient(HttpClient httpClient)
