@@ -1,0 +1,21 @@
+﻿@typeparam T
+@inherits AutoCompleteListBase<T>
+
+<div class="autocomplete-list @Class">
+    <MatStringField class="autocomplete-list-input" 
+                    PlaceHolder="@Placeholder"
+                    Label="@Label"
+                    Outlined="true"
+                    @oninput="OnInput"
+                    @bind-value="value" />
+
+    @if (!suggestionsLoading)
+    {
+        <div class="autocomplete-list-items">
+            @foreach (var suggestion in Suggestions)
+            {
+                <MatListItem OnClick="() => OnSuggestionClick(suggestion)">@suggestion.ToString()</MatListItem>
+            }
+        </div>
+    }
+</div>

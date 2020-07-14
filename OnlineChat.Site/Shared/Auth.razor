@@ -1,0 +1,164 @@
+﻿
+@inject AuthenticationStateProvider AuthProvider
+@inject WebApiClient Api 
+@inject IMatToaster Toaster
+
+<AuthorizeView>
+    <Authorized>
+        Hello, @Provider.Username
+        <MatButton OnClick="() => Provider.Logoff()" Outlined="true" Class="auth-btn">Log off</MatButton>
+    </Authorized>
+
+    <NotAuthorized>
+        <MatButton OnClick="() => _isloginDialogOpen = true" Outlined="true" Class="auth-btn" Icon="person">Login</MatButton>
+    </NotAuthorized>
+</AuthorizeView>
+
+<MatDialog IsOpen="_isloginDialogOpen">
+    <MatDialogTitle>Log in</MatDialogTitle>
+    <MatDialogContent>
+        <div class="d-flex">
+            <MatIcon Class="icon-35px align-self-end">person</MatIcon>
+            <MatTextField FullWidth="true"
+                          PlaceHolder="Enter username..."
+                          Required="true"
+                          @bind-Value="@_login" />
+        </div>
+        <div class="d-flex">
+            <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
+            <MatTextField FullWidth="true"
+                          Type="password"
+                          PlaceHolder="Enter password..."
+                          Required="true"
+                          @bind-Value="@_password" />
+        </div>
+
+        <div class="d-flex "><a class="register-tip text-center text-primary" 
+                                @onclick="() =>
+                                {
+                                    _isloginDialogOpen = false;
+                                    _isRegisterDialogOpen = true;
+                                    StateHasChanged();
+                                }">New? Register here.</a></div>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="CleanupFields">Cancel</MatButton>
+        <MatButton OnClick="OnLogin">Login</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+<MatDialog IsOpen="_isRegisterDialogOpen">
+    <MatDialogTitle>Register</MatDialogTitle>
+    <MatDialogContent>
+        <div class="d-flex">
+            <MatIcon Class="icon-35px align-self-end">person</MatIcon>
+            <MatTextField FullWidth="true"
+                          PlaceHolder="Enter username..."
+                          Required="true"
+                          @bind-Value="_registerModel.Username" />
+        </div>
+        <div class="d-flex">
+            <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
+            <MatTextField FullWidth="true"
+                          Type="password"
+                          PlaceHolder="Enter password..."
+                          Required="true"
+                          @bind-Value="_registerModel.Password" />
+        </div>
+        <div class="d-flex">
+            <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
+            <MatTextField FullWidth="true"
+                          Type="password"
+                          PlaceHolder="Confirm password..."
+                          Required="true"
+                          @bind-Value="_registerModel.ConfirmPassword" />
+        </div>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="CleanupFields">Cancel</MatButton>
+        <MatButton OnClick="OnRegister">Register</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+@code {
+    private string _login;
+    private string _password;
+
+    private bool _isloginDialogOpen = false;
+    private bool _isRegisterDialogOpen = false;
+
+    private AuthStateProvider Provider => AuthProvider as AuthStateProvider;
+
+    private RegisterModel _registerModel = new RegisterModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthProvider.AuthenticationStateChanged += async delegate
+        {
+            if (!((await AuthProvider.GetAuthenticationStateAsync()).User.Identity.IsAuthenticated))
+            {
+                _isloginDialogOpen = true;
+                StateHasChanged();
+            }
+        };
+
+        if(!((await AuthProvider.GetAuthenticationStateAsync()).User.Identity.IsAuthenticated))
+        {
+            _isloginDialogOpen = true;
+            StateHasChanged();
+        }
+    }
+
+    public void OnLogin()
+    {
+        Task.Run(async () => {
+            try
+            {
+                await Provider.Login(_login, _password);
+            }
+            catch (ApplicationException e)
+            {
+                Toaster.Add(e.Message, MatToastType.Warning);
+            }
+        })
+        .ContinueWith((task) =>
+        {
+            CleanupFields();
+            StateHasChanged();
+        });
+    }
+
+    public void OnRegister()
+    {
+        if (_registerModel.Password != _registerModel.ConfirmPassword)
+        {
+            Toaster.Add("Password and confirm password do not match", MatToastType.Warning);
+        }
+        else
+        {
+            Task.Run(async () =>
+            {
+                var result = await Api.RegisterUser(_registerModel);
+                if (!result.IsSuccessStatusCode)
+                {
+                    Toaster.Add(await result.Content.ReadAsStringAsync(), MatToastType.Danger);
+                }
+            })
+            .ContinueWith(task =>
+            {
+                CleanupFields();
+                _isloginDialogOpen = true;
+                StateHasChanged();
+            });
+        }
+    }
+
+    public void CleanupFields()
+    {
+        _registerModel.Password = string.Empty;
+        _password = string.Empty;
+        _login = string.Empty;
+        _isloginDialogOpen = false;
+        _isRegisterDialogOpen = false;
+    }
+}

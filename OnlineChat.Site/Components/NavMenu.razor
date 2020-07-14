@@ -1,0 +1,131 @@
+﻿
+@inject WebApiClient Api
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+@inject IMatToaster Toaster
+@inject InstantMessager InstantMessager
+
+<MatNavMenu>
+    <AuthorizeView>
+        <Authorized>
+            <MatButton Class="outline-none" Icon="add" Outlined="true" OnClick="() => _isDialogOpen = true">Add chat</MatButton>
+            <MatDivider></MatDivider>
+
+            <MatHeadline6 Class="mb-0 ml-3">Direct</MatHeadline6>
+            <MatList>
+                @foreach (var chat in _chats.OfType<DirectChatInfo>())
+                {
+                    <MatListItem OnClick="() => NavigateToChat(chat.Id)">@(chat.Members.Single(username => username != (AuthProvider as AuthStateProvider).Username) ?? "Me")</MatListItem>
+                }
+            </MatList>
+
+            <MatDivider></MatDivider>
+
+            <MatHeadline6 Class="mb-0 ml-3">Groups</MatHeadline6>
+            <MatList>
+                @foreach (var group in _chats.OfType<GroupChatInfo>())
+                {
+                    <MatListItem OnClick="() => NavigateToChat(group.Id)">@(group.Name)</MatListItem>
+                }
+            </MatList>
+        </Authorized>
+    </AuthorizeView>
+</MatNavMenu>
+
+<MatDialog IsOpen="_isDialogOpen">
+    <MatDialogTitle>Add chat</MatDialogTitle>
+    <MatDialogContent>
+        <div class="d-flex">
+            <MatSelectItem Class="m-1"
+                           Items="new ChatType[] { ChatType.Direct, ChatType.Group }"
+                           @bind-Value="_createChatModel.ChatType"
+                           Outlined="true"
+                           Label="Chat type"></MatSelectItem>
+            @if (_createChatModel.ChatType == ChatType.Group)
+            {
+                <MatStringField @bind-Value="_createChatModel.Name"
+                                PlaceHolder="Enter group name..."
+                                Label="Group name"
+                                Outlined="true"
+                                Class="m-1"></MatStringField>
+            }
+            else if (_createChatModel.ChatType == ChatType.Direct)
+            {
+                <AutoCompleteList Class="m-1"
+                                  Label="Start chat with"
+                                  @bind-Value="_username"
+                                  T="string"
+                                  SuggestionsOnInput="async (input) => await Api.GetUsernamesStartsWithAsync(input)"></AutoCompleteList>
+            }
+        </div>
+
+        @if (_createChatModel.ChatType == ChatType.Group)
+        {
+            <MatDivider></MatDivider>
+
+            <div class="d-flex align-items-center">
+                <AutoCompleteList Class="m-1"
+                                  Label="Username"
+                                  @bind-Value="_username"
+                                  T="string"
+                                  SuggestionsOnInput="async (input) => await Api.GetUsernamesStartsWithAsync(input)"></AutoCompleteList>
+                <MatButton Raised="true"
+                           OnClick="OnAddMemberClick">Add</MatButton>
+            </div>
+
+            <div class="member-container">
+                @foreach (var member in _createChatModel.Members)
+                {
+                    <MatChip @onclick="() => _createChatModel.Members.Remove(member)" Label="@member"></MatChip>
+                }
+            </div>
+        }
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="() => _isDialogOpen = false">Cancel</MatButton>
+        <MatButton OnClick="OnAddChatClick">Add</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+@code {
+    private List<ChatInfo> _chats = new List<ChatInfo>();
+    private bool _isDialogOpen = false;
+    private CreateChatModel _createChatModel = new CreateChatModel();
+    private string _username;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InstantMessager.GoOnline();
+
+        InstantMessager.ChatCreated += (sender, args) =>
+        {
+            _chats.Add(args.ChatInfo);
+            StateHasChanged();
+        };
+
+        _chats.AddRange(await Api.GetChatsAsync());
+    }
+
+    private void NavigateToChat(int chatId)
+        => Navigation.NavigateTo($"chat/{chatId}");
+
+    private async Task OnAddChatClick()
+    {
+        if (_createChatModel.ChatType == ChatType.Direct) _createChatModel.Members = new List<string>() { _username };
+
+        var result = await Api.CreateChat(_createChatModel);
+
+        if (result.IsSuccessStatusCode) Toaster.Add("Chat created", MatToastType.Success);
+        else Toaster.Add("Error occured while creating chat", MatToastType.Danger);
+
+        _isDialogOpen = false;
+    }
+
+    private void OnAddMemberClick()
+    {
+        if (!_createChatModel.Members.Contains(_username))
+        {
+            _createChatModel.Members.Add(_username);
+        }
+    }
+}

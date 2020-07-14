@@ -1,0 +1,25 @@
+﻿@page "/chat/{ChatId}"
+@page "/"
+
+<AuthorizeView>
+    <Authorized>
+        <MatDrawerContainer Class="h-100">
+            <MatDrawer Class="p-2 font-35px" Opened="true">
+                <NavMenu />
+            </MatDrawer>
+            <MatDrawerContent Class="appcontent bg-dark d-grid">
+                @if (ChatId != null)
+                {
+                    <Chat ChatId="int.Parse(ChatId)"/>
+                }
+            </MatDrawerContent>
+        </MatDrawerContainer>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string ChatId { get; set; }
+    [Parameter]
+    public int? ReplyTo { get; set; }
+}

@@ -1,0 +1,23 @@
+﻿
+@inherits LayoutComponentBase
+
+@inject AuthenticationStateProvider AuthProvider
+
+<MatToastContainer/>
+
+<MatAppBarContainer Class="h-100">
+    <MatAppBar Fixed="false" Class="topbar">
+        <MatAppBarRow>
+            <MatAppBarSection>
+                <MatAppBarTitle>Online chat</MatAppBarTitle>
+            </MatAppBarSection>
+            <MatAppBarSection Align="MatAppBarSectionAlign.End">
+                <Auth/>
+            </MatAppBarSection>
+        </MatAppBarRow>
+    </MatAppBar>
+
+    <MatAppBarContent Class="h-100">
+        @Body
+    </MatAppBarContent>
+</MatAppBarContainer>

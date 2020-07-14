@@ -1,0 +1,34 @@
+﻿@inject AuthenticationStateProvider AuthProvider
+
+    <div class="border-color-inherit">
+        @if (Message is ReplyMessageViewModel reply)
+        {
+            <div class="message-reply">
+                @if (reply.ReplyTo == null)
+                {
+                    <p>Deleted</p>
+                }
+                else
+                {
+                    <MessageVisualizer Message="reply.ReplyTo" />
+                }
+            </div>
+        }
+
+        @switch (Message.ContentType)
+        {
+            case ContentType.Text:
+                <TextMessage Text="@Message.Content.ToString()"
+                             Author="@Message.Author"
+                             SentOn="@Message.SentOn" />
+                break;
+            default:
+                throw new ApplicationException("Unsupported content type");
+        }
+    </div>
+
+
+@code {
+    [Parameter]
+    public MessageViewModel Message { get; set; }
+}

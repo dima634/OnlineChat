@@ -1,0 +1,93 @@
+﻿@inherits ChatBase
+
+<div class="d-flex overflow-hidden">
+    <div class="w-100 chat-container">
+        <div class="messages-wraper">
+            @if (_loading)
+            {
+                <MatProgressBar Indeterminate="true"></MatProgressBar>
+            }
+            else
+            {
+                @foreach (var message in _messages.Reverse<MessageViewModel>())
+                {
+                    var menyId = (AuthProvider as AuthStateProvider).Username == message.Author ?
+                                                                                    "extended" :
+                                                                                    "simple";
+
+                    <ContextMenuTrigger MenuId="@menyId" Data="message">
+                        <div class="@(message.Author == (AuthProvider as AuthStateProvider).Username ? "message-box message-box-mine" : "message-box")"
+                                @ref="MessageElement">
+                            <MessageVisualizer Message="message" />
+                        </div>
+                    </ContextMenuTrigger>
+                }
+            }
+        </div>
+
+        @if (_replyTo != null)
+        {
+            <div class="reply-box bg-light">
+                <MatIcon Class="icon-35px btn-send">reply</MatIcon>
+                <MessageVisualizer Message="_replyTo" />
+                <MatIconButton Class="btn-send" Icon="close" OnClick="() => _replyTo = null" />
+            </div>
+        }
+
+        @if (_edit != null)
+        {
+            <div class="reply-box bg-light">
+                <MatIcon Class="icon-35px btn-send">edit</MatIcon>
+                <MessageVisualizer Message="_edit" />
+                <MatIconButton Class="btn-send" Icon="close" OnClick="() => _edit = null" />
+            </div>
+        }
+
+        <div class="bg-light d-flex">
+            <label class="textarea mdc-text-field mdc-text-field--filled mdc-text-field--fullwidth mdc-text-field--textarea">
+                <span class="mdc-text-field__ripple"></span>
+                <textarea class="mat-text-field-input mdc-text-field__input"
+                          style="overflow: hidden; overflow-wrap: break-word; height: 72px;" spellcheck="false"
+                          onkeyup="resize()"
+                          onkeypress="handleInput(event)"
+                          @bind-value="_messageText"
+                          @bind-value:event="oninput"
+                          @ref="_textarea">@_messageText</textarea>
+                        <span class="mdc-line-ripple" style="transform-origin: 383px center;"></span>
+                    </label>
+
+            <MatIconButton Icon="send" OnClick="OnSendClickAsync" Class="btn-send"></MatIconButton>
+        </div>
+    </div>
+
+    <div class="chat-info-container">
+        <MatHeadline6>Members</MatHeadline6>
+        <MatDivider></MatDivider>
+        @if (!_loading)
+        {
+            foreach (var name in _chat.Members)
+            {
+                <MatBody1>@name</MatBody1>
+            }
+        }
+    </div>
+</div>
+
+<ContextMenu Id="extended" AutoHide="true">
+    <Item OnClick="OnEditClick">Edit</Item>
+    <Item OnClick="OnDeleteForAllClick">Delete for all</Item>
+    <Item OnClick="OnDeleteForMeClick">Delete for me</Item>
+    <Item OnClick="args => _replyTo = args.Data as MessageViewModel">Reply</Item>
+    @if (!(_chat is DirectChatInfo))
+    {
+        <Item OnClick="OnReplyToDirectClickAsyn">Reply to direct</Item>
+    }
+</ContextMenu>
+
+<ContextMenu Id="simple" AutoHide="true">
+    <Item OnClick="args => _replyTo = args.Data as MessageViewModel">Reply</Item>
+    @if (!(_chat is DirectChatInfo))
+    {
+        <Item OnClick="OnReplyToDirectClickAsyn">Reply to direct</Item>
+    }
+</ContextMenu>
