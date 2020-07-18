@@ -15,7 +15,7 @@
             <MatList>
                 @foreach (var chat in _chats.OfType<DirectChatInfo>())
                 {
-                    <MatListItem OnClick="() => NavigateToChat(chat.Id)">@(chat.Members.Single(username => username != (AuthProvider as AuthStateProvider).Username) ?? "Me")</MatListItem>
+                    <MatListItem OnClick="() => NavigateToChat(chat.Id)">@(chat.Members.FirstOrDefault(username => username != (AuthProvider as AuthStateProvider).Username) ?? "Me")</MatListItem>
                 }
             </MatList>
 

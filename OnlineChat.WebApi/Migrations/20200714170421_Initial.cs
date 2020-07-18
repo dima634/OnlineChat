@@ -3,10 +3,36 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace OnlineChat.WebApi.Migrations
 {
-    public partial class ModelsCreated : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "MessageContents",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Discriminator = table.Column<string>(nullable: false),
+                    Text = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageContents", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Nickname = table.Column<string>(nullable: false),
+                    PasswordHash = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Nickname);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Chats",
                 columns: table => new
@@ -26,20 +52,6 @@ namespace OnlineChat.WebApi.Migrations
                         principalTable: "Users",
                         principalColumn: "Nickname",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "MessageContents",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Discriminator = table.Column<string>(nullable: false),
-                    Text = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MessageContents", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -76,7 +88,10 @@ namespace OnlineChat.WebApi.Migrations
                     ContentId = table.Column<int>(nullable: true),
                     SentOn = table.Column<DateTime>(nullable: false),
                     HideForAuthor = table.Column<bool>(nullable: false),
-                    ChatId = table.Column<int>(nullable: true)
+                    IsEdited = table.Column<bool>(nullable: false),
+                    ChatId = table.Column<int>(nullable: true),
+                    Discriminator = table.Column<string>(nullable: false),
+                    ReplyToId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -97,6 +112,12 @@ namespace OnlineChat.WebApi.Migrations
                         name: "FK_Messages_MessageContents_ContentId",
                         column: x => x.ContentId,
                         principalTable: "MessageContents",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_Messages_ReplyToId",
+                        column: x => x.ReplyToId,
+                        principalTable: "Messages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -125,6 +146,11 @@ namespace OnlineChat.WebApi.Migrations
                 name: "IX_Messages_ContentId",
                 table: "Messages",
                 column: "ContentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ReplyToId",
+                table: "Messages",
+                column: "ReplyToId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -140,6 +166,9 @@ namespace OnlineChat.WebApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "MessageContents");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

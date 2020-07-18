@@ -3,17 +3,15 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineChat.WebApi.Models;
 
 namespace OnlineChat.WebApi.Migrations
 {
     [DbContext(typeof(OnlineChatDatabaseContext))]
-    [Migration("20200611172937_ModelsCreated")]
-    partial class ModelsCreated
+    partial class OnlineChatDatabaseContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,7 +19,7 @@ namespace OnlineChat.WebApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.Chat", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.Chat", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -39,7 +37,7 @@ namespace OnlineChat.WebApi.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Chat");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.ChatMember", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.ChatMember", b =>
                 {
                     b.Property<int>("ChatId")
                         .HasColumnType("int");
@@ -54,7 +52,7 @@ namespace OnlineChat.WebApi.Migrations
                     b.ToTable("ChatMember");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.Message", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -70,7 +68,14 @@ namespace OnlineChat.WebApi.Migrations
                     b.Property<int?>("ContentId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("HideForAuthor")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEdited")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("SentOn")
@@ -85,9 +90,11 @@ namespace OnlineChat.WebApi.Migrations
                     b.HasIndex("ContentId");
 
                     b.ToTable("Messages");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Message");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.MessageContent", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.MessageContent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,7 +112,7 @@ namespace OnlineChat.WebApi.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("MessageContent");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.User", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.User", b =>
                 {
                     b.Property<string>("Nickname")
                         .HasColumnType("nvarchar(450)");
@@ -118,16 +125,16 @@ namespace OnlineChat.WebApi.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.DirectChat", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.DirectChat", b =>
                 {
-                    b.HasBaseType("ReenbitChat.WebApi.Models.Chat");
+                    b.HasBaseType("OnlineChat.WebApi.Models.Chat");
 
                     b.HasDiscriminator().HasValue("DirectChat");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.GroupChat", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.GroupChat", b =>
                 {
-                    b.HasBaseType("ReenbitChat.WebApi.Models.Chat");
+                    b.HasBaseType("OnlineChat.WebApi.Models.Chat");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -140,9 +147,21 @@ namespace OnlineChat.WebApi.Migrations
                     b.HasDiscriminator().HasValue("GroupChat");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.TextContent", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.ReplyMessage", b =>
                 {
-                    b.HasBaseType("ReenbitChat.WebApi.Models.MessageContent");
+                    b.HasBaseType("OnlineChat.WebApi.Models.Message");
+
+                    b.Property<int?>("ReplyToId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("ReplyToId");
+
+                    b.HasDiscriminator().HasValue("ReplyMessage");
+                });
+
+            modelBuilder.Entity("OnlineChat.WebApi.Models.TextContent", b =>
+                {
+                    b.HasBaseType("OnlineChat.WebApi.Models.MessageContent");
 
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
@@ -150,41 +169,48 @@ namespace OnlineChat.WebApi.Migrations
                     b.HasDiscriminator().HasValue("TextContent");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.ChatMember", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.ChatMember", b =>
                 {
-                    b.HasOne("ReenbitChat.WebApi.Models.Chat", "Chat")
+                    b.HasOne("OnlineChat.WebApi.Models.Chat", "Chat")
                         .WithMany("ChatMembers")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ReenbitChat.WebApi.Models.User", "User")
+                    b.HasOne("OnlineChat.WebApi.Models.User", "User")
                         .WithMany("ChatMembers")
                         .HasForeignKey("Username")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.Message", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.Message", b =>
                 {
-                    b.HasOne("ReenbitChat.WebApi.Models.User", "Author")
+                    b.HasOne("OnlineChat.WebApi.Models.User", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorNickname");
 
-                    b.HasOne("ReenbitChat.WebApi.Models.Chat", null)
+                    b.HasOne("OnlineChat.WebApi.Models.Chat", "Chat")
                         .WithMany("Messages")
                         .HasForeignKey("ChatId");
 
-                    b.HasOne("ReenbitChat.WebApi.Models.MessageContent", "Content")
+                    b.HasOne("OnlineChat.WebApi.Models.MessageContent", "Content")
                         .WithMany()
                         .HasForeignKey("ContentId");
                 });
 
-            modelBuilder.Entity("ReenbitChat.WebApi.Models.GroupChat", b =>
+            modelBuilder.Entity("OnlineChat.WebApi.Models.GroupChat", b =>
                 {
-                    b.HasOne("ReenbitChat.WebApi.Models.User", "Owner")
+                    b.HasOne("OnlineChat.WebApi.Models.User", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerNickname");
+                });
+
+            modelBuilder.Entity("OnlineChat.WebApi.Models.ReplyMessage", b =>
+                {
+                    b.HasOne("OnlineChat.WebApi.Models.Message", "ReplyTo")
+                        .WithMany()
+                        .HasForeignKey("ReplyToId");
                 });
 #pragma warning restore 612, 618
         }
