@@ -1,32 +1,33 @@
-﻿@inject AuthenticationStateProvider AuthProvider
+﻿@using System.Globalization
+@inject AuthenticationStateProvider AuthProvider
 
-    <div class="border-color-inherit">
-        @if (Message is ReplyMessageViewModel reply)
+<div class="message-header">
+    <p>@Message.Author</p>
+    <p>@Message.SentOn.ToString("MMM dd hh:mm yyyy", CultureInfo.InvariantCulture)</p>
+</div>
+
+@if (Message is ReplyMessageViewModel reply)
+{
+    <div class="message-reply">
+        @if (reply.ReplyTo == null)
         {
-            <div class="message-reply">
-                @if (reply.ReplyTo == null)
-                {
-                    <p>Deleted</p>
-                }
-                else
-                {
-                    <MessageVisualizer Message="reply.ReplyTo" />
-                }
-            </div>
+            <p>Deleted</p>
         }
-
-        @switch (Message.ContentType)
+        else
         {
-            case ContentType.Text:
-                <TextMessage Text="@Message.Content.ToString()"
-                             Author="@Message.Author"
-                             SentOn="@Message.SentOn" />
-                break;
-            default:
-                throw new ApplicationException("Unsupported content type");
+            <MessageVisualizer Message="reply.ReplyTo" />
         }
     </div>
+}
 
+@switch (Message.ContentType)
+{
+    case ContentType.Text:
+        <TextMessage Text="@Message.Content.ToString()"/>
+        break;
+    default:
+        throw new ApplicationException("Unsupported content type");
+}
 
 @code {
     [Parameter]

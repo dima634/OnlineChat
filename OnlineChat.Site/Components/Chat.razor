@@ -10,18 +10,19 @@
             else
             {
                 @foreach (var message in _messages.Reverse<MessageViewModel>())
-                {
+                 {
                     var menyId = (AuthProvider as AuthStateProvider).Username == message.Author ?
                                                                                     "extended" :
                                                                                     "simple";
 
-                    <ContextMenuTrigger MenuId="@menyId" Data="message">
-                        <div class="@(message.Author == (AuthProvider as AuthStateProvider).Username ? "message-box message-box-mine" : "message-box")"
-                                @ref="MessageElement">
+                    <div class="@(message.Author == (AuthProvider as AuthStateProvider).Username ? "message-box message-box-mine" : "message-box")">
+                        <ContextMenuTrigger CssClass="message"
+                                            MenuId="@menyId"
+                                            Data="message">
                             <MessageVisualizer Message="message" />
-                        </div>
-                    </ContextMenuTrigger>
-                }
+                        </ContextMenuTrigger>
+                    </div>
+                 }
             }
         </div>
 

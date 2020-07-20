@@ -64,13 +64,6 @@ namespace OnlineChat.Site.Components
         #endregion fileds
 
         protected List<ElementReference> _messageElements = new List<ElementReference>();
-        protected ElementReference MessageElement
-        {
-            set
-            {
-                _messageElements.Add(value);
-            }
-        }
 
         #region lifetime methods
 

@@ -206,8 +206,12 @@ td {
 }
 
 .message-box {
-    width: fit-content;
-    margin: 5px;
+    box-sizing: border-box;
+    margin-right: auto;
+    overflow-wrap: break-word;
+    margin-bottom: 5px;
+    border-color: inherit;
+    max-width: 100%;
     padding: 10px;
     /*box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);*/
     background-color: white;
@@ -216,8 +220,13 @@ td {
     border-color: dodgerblue;
 }
 
+    .message-box:last-child {
+        margin-bottom: 0px;
+    }
+
     .message-box.message-box-mine {
-        margin-left: auto;
+        margin-right: 0;
+        margin-left:auto;
         background-color: #def3d8;
         border-radius: 10px 0px 10px 10px;
         border-color: seagreen;
@@ -256,7 +265,10 @@ td {
 }
 
 .messages-wraper {
+    padding: 5px;
     overflow-y:auto;
+    display:flex;
+    flex-direction: column;
 }
 
 /*.messages-wraper::-webkit-scrollbar {
@@ -302,7 +314,12 @@ td {
 
 .message {
     min-width: 230px;
-    overflow-wrap: anywhere;
+    max-width: 100%;
+    border-color: seagreen;
+}
+
+.message > message-box-mine {
+    border-color:dodgerblue;
 }
 
 .border-color-inherit {

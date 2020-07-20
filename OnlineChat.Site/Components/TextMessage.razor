@@ -1,28 +1,13 @@
 ﻿@using System.Globalization 
 
-    <div class="message">
-        <div class="message-header">
-            <p>@Author</p>
-            <p>@SentOn.ToString("MMM dd hh:mm yyyy", CultureInfo.InvariantCulture)</p>
-        </div>
-        <p>
-            @foreach (var line in Text.Split(Environment.NewLine))
-            {
-                @line<br />
-            }
-        </p>
-    </div>
+<p>
+    @foreach (var line in Text.Split(Environment.NewLine))
+    {
+        @line<br />
+    }
+</p>
 
 @code {
     [Parameter]
-    public string Author { get; set; }
-
-    [Parameter]
-    public DateTime SentOn { get; set; }
-
-    [Parameter]
     public string Text { get; set; }
-
-    [Parameter]
-    public string Class { get; set; }
 }
