@@ -15,81 +15,85 @@
 </AuthorizeView>
 
 <MatDialog IsOpen="_isloginDialogOpen">
-    <MatDialogTitle>Log in</MatDialogTitle>
-    <MatDialogContent>
-        <div class="d-flex">
-            <MatIcon Class="icon-35px align-self-end">person</MatIcon>
-            <MatTextField FullWidth="true"
-                          PlaceHolder="Enter username..."
-                          Required="true"
-                          @bind-Value="@_login" />
-        </div>
-        <div class="d-flex">
-            <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
-            <MatTextField FullWidth="true"
-                          Type="password"
-                          PlaceHolder="Enter password..."
-                          Required="true"
-                          @bind-Value="@_password" />
-        </div>
+    <EditForm Model="_loginModel" OnValidSubmit="OnLogin">
+        <MatDialogTitle>Log in</MatDialogTitle>
+        <MatDialogContent>
+            <DataAnnotationsValidator />
 
-        <div class="d-flex "><a class="register-tip text-center text-primary" 
-                                @onclick="() =>
+            <div class="d-flex">
+                <MatIcon Class="icon-35px align-self-end">person</MatIcon>
+                <MatTextField FullWidth="true"
+                              PlaceHolder="Enter username..."
+                              @bind-Value="@_loginModel.Username" />
+            </div>
+            <div class="d-flex">
+                <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
+                <MatTextField FullWidth="true"
+                              Type="password"
+                              PlaceHolder="Enter password..."
+                              @bind-Value="@_loginModel.Password" />
+            </div>
+
+            <ValidationSummary />
+
+            <div class="d-flex ">
+                <a class="register-tip text-center text-primary"
+                   @onclick="() =>
                                 {
                                     _isloginDialogOpen = false;
                                     _isRegisterDialogOpen = true;
                                     StateHasChanged();
-                                }">New? Register here.</a></div>
-    </MatDialogContent>
-    <MatDialogActions>
-        <MatButton OnClick="CleanupFields">Cancel</MatButton>
-        <MatButton OnClick="OnLogin">Login</MatButton>
-    </MatDialogActions>
+                                }">New? Register here.</a>
+            </div>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="CleanupFields">Cancel</MatButton>
+            <MatButton Type="submit">Login</MatButton>
+        </MatDialogActions>
+    </EditForm>
 </MatDialog>
 
 <MatDialog IsOpen="_isRegisterDialogOpen">
-    <MatDialogTitle>Register</MatDialogTitle>
-    <MatDialogContent>
-        <div class="d-flex">
-            <MatIcon Class="icon-35px align-self-end">person</MatIcon>
-            <MatTextField FullWidth="true"
-                          PlaceHolder="Enter username..."
-                          Required="true"
-                          @bind-Value="_registerModel.Username" />
-        </div>
-        <div class="d-flex">
-            <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
-            <MatTextField FullWidth="true"
-                          Type="password"
-                          PlaceHolder="Enter password..."
-                          Required="true"
-                          @bind-Value="_registerModel.Password" />
-        </div>
-        <div class="d-flex">
-            <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
-            <MatTextField FullWidth="true"
-                          Type="password"
-                          PlaceHolder="Confirm password..."
-                          Required="true"
-                          @bind-Value="_registerModel.ConfirmPassword" />
-        </div>
-    </MatDialogContent>
-    <MatDialogActions>
-        <MatButton OnClick="CleanupFields">Cancel</MatButton>
-        <MatButton OnClick="OnRegister">Register</MatButton>
-    </MatDialogActions>
+    <EditForm Model="_registerModel" OnValidSubmit="OnRegister">
+        <MatDialogTitle>Register</MatDialogTitle>
+        <MatDialogContent>
+            <div class="d-flex">
+                <MatIcon Class="icon-35px align-self-end">person</MatIcon>
+                <MatTextField FullWidth="true"
+                              PlaceHolder="Enter username..."
+                              @bind-Value="_registerModel.Username" />
+            </div>
+            <div class="d-flex">
+                <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
+                <MatTextField FullWidth="true"
+                              Type="password"
+                              PlaceHolder="Enter password..."
+                              Required="true"
+                              @bind-Value="_registerModel.Password" />
+            </div>
+            <div class="d-flex">
+                <MatIcon Class="icon-35px align-self-end">lock</MatIcon>
+                <MatTextField FullWidth="true"
+                              Type="password"
+                              PlaceHolder="Confirm password..."
+                              @bind-Value="_registerModel.ConfirmPassword" />
+            </div>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="CleanupFields">Cancel</MatButton>
+            <MatButton Type="submit">Register</MatButton>
+        </MatDialogActions>
+    </EditForm>
 </MatDialog>
 
 @code {
-    private string _login;
-    private string _password;
-
     private bool _isloginDialogOpen = false;
     private bool _isRegisterDialogOpen = false;
 
     private AuthStateProvider Provider => AuthProvider as AuthStateProvider;
 
     private RegisterModel _registerModel = new RegisterModel();
+    private AuthorizeModel _loginModel = new AuthorizeModel();
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,7 +118,7 @@
         Task.Run(async () => {
             try
             {
-                await Provider.Login(_login, _password);
+                await Provider.Login(_loginModel);
             }
             catch (ApplicationException e)
             {
@@ -156,8 +160,8 @@
     public void CleanupFields()
     {
         _registerModel.Password = string.Empty;
-        _password = string.Empty;
-        _login = string.Empty;
+        _loginModel.Password = string.Empty;
+        _loginModel.Username = string.Empty;
         _isloginDialogOpen = false;
         _isRegisterDialogOpen = false;
     }

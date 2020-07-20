@@ -88,8 +88,11 @@ namespace OnlineChat.Site.WebApi
         public async Task<HttpResponseMessage> EditMessage(EditMessageModel model)
             => await _httpClient.PostAsync($"message/edit", model);
 
-        public async Task<HttpResponseMessage> CreateChat(CreateChatModel model)
-            => await _httpClient.PostAsync("chat/create", model);
+        public async Task<HttpResponseMessage> CreateDirectChat(CreateDirectChatModel model)
+            => await _httpClient.PostAsync("chat/create/direct", model);
+
+        public async Task<HttpResponseMessage> CreateGroupChat(CreateGroupModel model)
+            => await _httpClient.PostAsync("chat/create/group", model);
 
         #region Helpers
 

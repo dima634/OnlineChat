@@ -95,30 +95,34 @@ namespace OnlineChat.WebApi.Controllers
         }
 
         [HttpPost]
-        [Route("create")]
-        public ActionResult<ChatInfo> CreateChat([FromBody] CreateChatModel model)
+        [Route("create/group")]
+        public ActionResult<ChatInfo> CreateGroupChat([FromBody] CreateGroupModel model)
+        {
+            model.Members.Add(User.Identity.Name);
+            var chat = _chatService.CreateGroupChat(User.Identity.Name, model.Name, model.Members);
+            var chatInfo = _mapper.Map<GroupChatInfo>(chat);
+
+            var activeChatUsers = _subscriptionManager.GetActiveChatMembers(chatInfo.Id);
+            _hub.Clients.Clients(activeChatUsers.ToList()).ChatCreated(chatInfo);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("create/direct")]
+        public ActionResult<ChatInfo> CreateDirectChat([FromBody] CreateDirectChatModel model)
         {
             ChatInfo chatInfo;
 
-            if (model.ChatType == Dtos.ChatType.Direct)
+            try
             {
-                try
-                {
-                    var chat = _chatService.CreateDirectChat(User.Identity.Name, model.Members.Single());
-                    chatInfo = _mapper.Map<DirectChatInfo>(chat);
-                }
-                catch (ChatAlreadyExistException)
-                {
-                    return BadRequest($"You already have direct chat with {model.Members.Single()}");
-                }
+                var chat = _chatService.CreateDirectChat(User.Identity.Name, model.WithUser);
+                chatInfo = _mapper.Map<DirectChatInfo>(chat);
             }
-            else if (model.ChatType == Dtos.ChatType.Group)
+            catch (ChatAlreadyExistException)
             {
-                model.Members.Add(User.Identity.Name);
-                var chat = _chatService.CreateGroupChat(User.Identity.Name, model.Name, model.Members);
-                chatInfo = _mapper.Map<GroupChatInfo>(chat);
+                return BadRequest($"You already have direct chat with {model.WithUser}");
             }
-            else return BadRequest();
 
             var activeChatUsers = _subscriptionManager.GetActiveChatMembers(chatInfo.Id);
             _hub.Clients.Clients(activeChatUsers.ToList()).ChatCreated(chatInfo);

@@ -11,8 +11,22 @@ namespace OnlineChat.Site.Components
         [Parameter]
         public Func<string, Task<List<T>>> SuggestionsOnInput { get; set; }
 
+        private T _value;
         [Parameter]
-        public T Value { get; set; }
+        public T Value
+        {
+            get
+            {
+                if (_value == null) _value = Suggestions.Find(item => item.ToString() == value);
+
+                return _value;
+            }
+
+            set
+            {
+                _value = value;
+            }
+        }
 
         [Parameter]
         public EventCallback<T> ValueChanged { get; set; }
@@ -33,6 +47,8 @@ namespace OnlineChat.Site.Components
 
         protected void OnInput(ChangeEventArgs args)
         {
+            Suggestions.Clear();
+            Value = default;
             value = args.Value.ToString();
             if (value != string.Empty)
             {
@@ -41,6 +57,8 @@ namespace OnlineChat.Site.Components
                 {
                     Suggestions = await SuggestionsOnInput(args.Value.ToString());
                     suggestionsLoading = false;
+                    Value = Suggestions.Find(item => item.ToString() == value);
+                    await ValueChanged.InvokeAsync(Value);
                     StateHasChanged();
                 });
                 StateHasChanged();

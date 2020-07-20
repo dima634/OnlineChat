@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using OnlineChat.Dtos.BindingModels;
 
 namespace OnlineChat.Site.Auth
 {
@@ -26,9 +27,9 @@ namespace OnlineChat.Site.Auth
             return Task.FromResult(new AuthenticationState(user));
         }
 
-        public async Task Login(string username, string password)
+        public async Task Login(AuthorizeModel authorizeModel)
         {
-            _identity = await _api.Login(username, password);
+            _identity = await _api.Login(authorizeModel.Username, authorizeModel.Password);
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
             return;
         }

@@ -7,7 +7,8 @@
                     Label="@Label"
                     Outlined="true"
                     @oninput="OnInput"
-                    @bind-value="value" />
+                    @bind-value="value" 
+                    ValueExpression="() => value"/>
 
     @if (!suggestionsLoading)
     {
