@@ -76,7 +76,7 @@
                 </div>
 
                 <div class="member-container">
-                    <MatChip Class="bg-success" Label="@((AuthProvider as AuthStateProvider).Username)"/>
+                    <MatChip Class="bg-success text-white" Label="@((AuthProvider as AuthStateProvider).Username)"/>
                     @foreach (var member in _createGroupModel.Members)
                     {
                         <MatChip @onclick="() => _createGroupModel.Members.Remove(member)" Label="@member"/>
