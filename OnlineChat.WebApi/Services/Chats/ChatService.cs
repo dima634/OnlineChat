@@ -15,12 +15,14 @@ namespace OnlineChat.WebApi.Services
         private IChatRepo _chatRepo;
         private IUserRepo _userRepo;
         private IMessageRepo _messageRepo;
+        private IMessageReadStatusRepo _messageReadStatusRepo;
 
-        public ChatService(IChatRepo chatRepo, IUserRepo userRepo, IMessageRepo messageRepo)
+        public ChatService(IChatRepo chatRepo, IUserRepo userRepo, IMessageRepo messageRepo, IMessageReadStatusRepo messageReadStatusRepo)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _messageRepo = messageRepo;
+            _messageReadStatusRepo = messageReadStatusRepo;
         }
 
         public DirectChat CreateDirectChat(string participant1, string participant2)
@@ -174,6 +176,11 @@ namespace OnlineChat.WebApi.Services
             var author = _messageRepo.GetMessageAuthor(messageId);
 
             return author.Nickname == username;
+        }
+
+        public void MarkMessageAsReadByUser(int messageId, string username)
+        {
+            _messageReadStatusRepo.MarkRead(username, messageId);
         }
 
         public ReplyMessage ReplyToMessage(ReplyMessage message, int chatId, int replyTo)

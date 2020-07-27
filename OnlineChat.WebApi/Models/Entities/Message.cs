@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OnlineChat.WebApi.Models
 {
-    public class Message
+    public partial class Message
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -24,5 +24,7 @@ namespace OnlineChat.WebApi.Models
         public bool IsEdited { get; set; }
 
         public virtual Chat Chat { get; set; }
+
+        public virtual ICollection<MessageReadStatus> MessagesReadStatus { get; set; }
     }
 }

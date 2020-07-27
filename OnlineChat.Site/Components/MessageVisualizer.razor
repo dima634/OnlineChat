@@ -1,10 +1,14 @@
 ﻿@using System.Globalization
 @inject AuthenticationStateProvider AuthProvider
+@implements IDisposable
 
-<div class="message-header">
-    <p>@Message.Author</p>
-    <p>@Message.SentOn.ToString("MMM dd hh:mm yyyy", CultureInfo.InvariantCulture)</p>
-</div>
+@if(AddHeader)
+{
+    <div class="message-header">
+        <p>@Message.Author</p>
+        <p>@Message.SentOn.ToString("MMM dd hh:mm yyyy", CultureInfo.InvariantCulture)</p>
+    </div>
+}
 
 @if (Message is ReplyMessageViewModel reply)
 {
@@ -15,7 +19,7 @@
         }
         else
         {
-            <MessageVisualizer Message="reply.ReplyTo" />
+            <MessageVisualizer Message="reply.ReplyTo" AddFooter="false" />
         }
     </div>
 }
@@ -29,7 +33,64 @@
         throw new ApplicationException("Unsupported content type");
 }
 
+
+@if (AddFooter)
+{
+    <div class="message-footer">
+        @if (Message.IsRead)
+        {
+            <MatIcon Class="read-status-icon" Icon="done_all" />
+        }
+        else
+        {
+            <MatIcon Class="read-status-icon" Icon="done" />
+        }
+
+        @if (Message.IsEdited)
+        {
+            <p>Edited</p>
+        }
+        <p>@Message.Id</p>
+    </div>
+}
+
 @code {
     [Parameter]
     public MessageViewModel Message { get; set; }
+
+    [Parameter]
+    public bool AddHeader { get; set; } = true;
+
+    [Parameter]
+    public bool AddFooter { get; set; } = true;
+
+    private System.ComponentModel.PropertyChangedEventHandler OnPropertyChanged;
+    private MessageViewModel _prev;
+
+    protected override void OnInitialized()
+    {
+        OnPropertyChanged = delegate
+        {
+            StateHasChanged();
+            Console.WriteLine("rend");
+        };
+    }
+
+    protected override void OnParametersSet()
+    {
+        if(_prev != null)
+        {
+            Console.WriteLine("unsub");
+            _prev.PropertyChanged -= OnPropertyChanged;
+        }
+
+        Message.PropertyChanged += OnPropertyChanged;
+        _prev = Message;
+    }
+
+    void IDisposable.Dispose()
+    {
+        Console.WriteLine("disp");
+        Message.PropertyChanged -= OnPropertyChanged;
+    }
 }

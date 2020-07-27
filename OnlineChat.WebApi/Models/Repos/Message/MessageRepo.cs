@@ -20,7 +20,7 @@ namespace OnlineChat.WebApi.Models.Repos
             Context.MessageContents.Load();
             Context.Users.Load();
             Context.Chats.Load();
-            var message = Table.ToList().First(m => m.Id == messageId);
+            var message = Table.Include(message => message.MessagesReadStatus).First(m => m.Id == messageId);
             return message;
         }
 
@@ -34,7 +34,7 @@ namespace OnlineChat.WebApi.Models.Repos
             Context.MessageContents.Load();
             Context.Users.Load();
             Context.Chats.Load();
-            var messages = Table.ToList().Where(m => m.Chat.Id == chatId);
+            var messages = Table.Include(message => message.MessagesReadStatus).Where(m => m.Chat.Id == chatId);
             return messages.ToList();
         }
 

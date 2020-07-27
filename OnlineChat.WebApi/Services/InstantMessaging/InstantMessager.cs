@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using OnlineChat.Dtos.ViewModels;
 using OnlineChat.WebApi.Services.InstantMessaging;
 using System.Runtime.InteropServices.WindowsRuntime;
+using OnlineChat.WebApi.Models.Repos;
 
 namespace OnlineChat.WebApi.Services
 {
@@ -21,17 +22,25 @@ namespace OnlineChat.WebApi.Services
     public class InstantMessager : Hub<IInstantMessaging>
     {
         private ISubscriptionManager _subscriptionManager;
+        private IMessageReadStatusRepo _messageReadStatusRepo;
 
-        public InstantMessager(ISubscriptionManager subscriptionManager)
+        public InstantMessager(ISubscriptionManager subscriptionManager, IMessageReadStatusRepo messageReadStatusRepo)
         {
             _subscriptionManager = subscriptionManager;
+            _messageReadStatusRepo = messageReadStatusRepo;
         }
 
-        public void Subscribe(int chatId)
-            => _subscriptionManager.Subscribe(Context.User.Identity.Name, chatId, Context.ConnectionId);
+        //public void Subscribe(int chatId)
+        //    => _subscriptionManager.Subscribe(Context.User.Identity.Name, chatId, Context.ConnectionId);
 
-        public void UnSubscribe()
-            => _subscriptionManager.UnSubscribe(Context.ConnectionId);
+        //public void UnSubscribe()
+        //    => _subscriptionManager.UnSubscribe(Context.ConnectionId);
+
+        public void MarkMessageAsRead(int messageId, int chatId)
+        {
+            _messageReadStatusRepo.MarkRead(Context.User.Identity.Name, messageId);
+            Clients.Clients(_subscriptionManager.GetActiveChatMembers(chatId).ToList()).MessageRead(messageId, chatId);
+        }
 
         public override Task OnConnectedAsync()
         {

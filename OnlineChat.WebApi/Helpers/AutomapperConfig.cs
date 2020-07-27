@@ -72,12 +72,10 @@ namespace OnlineChat.WebApi.Helpers
                     .ForMember(ci => ci.Members, opt => opt.MapFrom(c => c.Members.Select(user => user.Nickname)));
 
                 cfg.CreateMap<DirectChat, DirectChatInfo>();
-                //cfg.CreateMap<DirectChat, ChatInfo>().As<DirectChatInfo>();
 
                 cfg.CreateMap<GroupChat, GroupChatInfo>()
                     .ForMember(ci => ci.Owner, opt => opt.MapFrom(c => c.Owner.Nickname))
                     .ForMember(ci => ci.Name, opt => opt.MapFrom(c => c.Name));
-                //cfg.CreateMap<DirectChat, ChatInfo>().As<GroupChatInfo>();
 
                 cfg.CreateMap<EditMessageModel, MessageContent>()
                     .ConstructUsing((model, context) =>

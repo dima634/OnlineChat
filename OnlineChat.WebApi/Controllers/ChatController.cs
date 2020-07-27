@@ -68,7 +68,7 @@ namespace OnlineChat.WebApi.Controllers
                 response = _mapper.Map<ReplyMessageViewModel>(reply);
             }
 
-            var subIds = _subscriptionManager.GetChatUpdateSubs(chatId);
+            var subIds = _subscriptionManager.GetActiveChatMembers(chatId);
             _hub.Clients.Clients(subIds.ToList()).MessageSent(response, chatId);
 
             return Ok();

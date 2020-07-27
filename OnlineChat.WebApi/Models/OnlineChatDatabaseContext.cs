@@ -12,6 +12,7 @@ namespace OnlineChat.WebApi.Models
         public DbSet<ReplyMessage> ReplyMessages { get; set; }
         public DbSet<MessageContent> MessageContents { get; set; }
         public DbSet<TextContent> TextContents { get; set; }
+        public DbSet<MessageReadStatus> MessagesReadStatuse { get; set; }
 
         public OnlineChatDatabaseContext(DbContextOptions options) : base(options)
         {
@@ -31,6 +32,18 @@ namespace OnlineChat.WebApi.Models
                .HasOne(cm => cm.Chat)
                .WithMany(c => c.ChatMembers)
                .HasForeignKey(cm => cm.ChatId);
+
+            modelBuilder.Entity<MessageReadStatus>().HasKey(mrs => new { mrs.MessageId, mrs.Username });
+
+            modelBuilder.Entity<MessageReadStatus>()
+                .HasOne(mrs => mrs.User)
+                .WithMany()
+                .HasForeignKey(mrs => mrs.Username);
+
+            modelBuilder.Entity<MessageReadStatus>()
+                .HasOne(mrs => mrs.Message)
+                .WithMany(message => message.MessagesReadStatus)
+                .HasForeignKey(mrs => mrs.MessageId);
         }
     }
 }

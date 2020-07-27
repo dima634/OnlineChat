@@ -42,7 +42,7 @@ namespace OnlineChat.WebApi.Controllers
             var edited = _chatService.EditMessage(model.Id, newContent);
 
             var chatId = _chatService.GetChatByMessageId(model.Id).Id;
-            var subIds = _subscriptionManager.GetChatUpdateSubs(chatId);
+            var subIds = _subscriptionManager.GetActiveChatMembers(chatId);
             _hub.Clients.Clients(subIds.ToList()).MessageEdited(_mapper.Map<MessageViewModel>(edited), chatId);
 
             return Ok();
@@ -58,7 +58,7 @@ namespace OnlineChat.WebApi.Controllers
 
             _chatService.DeleteMessage(model.Id, model.DeleteForAll);
 
-            var subIds = _subscriptionManager.GetChatUpdateSubs(chatId);
+            var subIds = _subscriptionManager.GetActiveChatMembers(chatId);
             _hub.Clients.Clients(subIds.ToList()).MessageDeleted(model.Id, chatId, model.DeleteForAll, User.Identity.Name);
 
             return Ok();

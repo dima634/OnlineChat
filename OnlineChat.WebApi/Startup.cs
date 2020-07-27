@@ -93,6 +93,7 @@ namespace OnlineChat.WebApi
                     .AddScoped<ISubscriptionManager, SubscriptionManager>()
                     .AddScoped<IUserRepo, UserRepo>()
                     .AddScoped<IChatRepo, ChatRepo>()
+                    .AddScoped<IMessageReadStatusRepo, MessageReadStatusRepo>()
                     .AddScoped<IMessageRepo, MessageRepo>()
                     .AddSingleton(AutomapperConfig.Build());
 

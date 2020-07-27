@@ -51,6 +51,7 @@ namespace OnlineChat.Site.Components
         protected bool _messageSent = false;
         protected bool _allMessagesLoaded = true;
         protected bool _loadedMore = false;
+        protected bool _isNewMessagesBarVisible = false;
         protected List<MessageViewModel> _messages = new List<MessageViewModel>();
         protected MessageViewModel _replyTo = null;
         protected MessageViewModel _edit = null;
@@ -63,7 +64,10 @@ namespace OnlineChat.Site.Components
 
         #endregion fileds
 
-        protected List<ElementReference> _messageElements = new List<ElementReference>();
+        protected ElementReference NewMessagesDivider { get; set; }
+        protected ElementReference _scroll;
+
+        protected string Username => (AuthProvider as AuthStateProvider).Username;
 
         #region lifetime methods
 
@@ -71,47 +75,66 @@ namespace OnlineChat.Site.Components
         {
             InstantMessager.MessageReceived += (sender, args) =>
             {
-                _messages.Insert(0, args.Message);
-                _messageSent = true;
-                StateHasChanged();
+                if (args.ChatId == ChatId)
+                {
+                    _messages.Insert(0, args.Message);
+                    if (args.Message.Author == Username)
+                    {
+                        _messageSent = true;
+                    }
+                    StateHasChanged();
+                }
             };
 
             InstantMessager.MessageEdited += (sender, args) =>
             {
-                var editedIdx = _messages.FindIndex(m => m.Id == args.Message.Id);
+                if (args.ChatId == ChatId)
+                {
+                    var editedIdx = _messages.FindIndex(m => m.Id == args.Message.Id);
 
-                _messages.RemoveAt(editedIdx);
-                _messages.Insert(editedIdx, args.Message);
+                    _messages.RemoveAt(editedIdx);
+                    _messages.Insert(editedIdx, args.Message);
 
-                StateHasChanged();
+                    StateHasChanged();
+                }
             };
 
             InstantMessager.MessageDeleted += (sender, args) =>
             {
-                var messageIdx = _messages.FindIndex(m => m.Id == args.MessageId);
-
-                if (args.DeletedForAll || args.Author == (AuthProvider as AuthStateProvider).Username)
+                if (args.ChatId == ChatId)
                 {
-                    _messages.RemoveAt(messageIdx);
-                }
+                    var messageIdx = _messages.FindIndex(m => m.Id == args.MessageId);
 
-                StateHasChanged();
+                    if (args.DeletedForAll || args.Author == (AuthProvider as AuthStateProvider).Username)
+                    {
+                        _messages.RemoveAt(messageIdx);
+                    }
+
+                    StateHasChanged();
+                }
+            };
+
+            InstantMessager.MessageRead += (sender, args) =>
+            {
+                _messages.Find(m => m.Id == args.MessageId).IsRead = true;
             };
 
             Js.InvokeVoidAsync("InitChat", DotNetObjectReference.Create(this));
+            //Js.InvokeVoidAsync("initScrollListening", DotNetObjectReference.Create(this), nameof(OnMessageInViewportAsync));
         }
 
         protected override void OnParametersSet()
         {
+            Console.WriteLine("param set");
+            _isNewMessagesBarVisible = false;
             _edit = null;
             _loadedMore = false;
             _firstLoad = true;
             _messages.Clear();
-            _messageElements.Clear();
+            //_messageElements.Clear();
             _allMessagesLoaded = false;
             _scrollTo = 0;
-
-            Js.InvokeVoidAsync("ScrollList.RemoveListener");
+            _loading = true;
 
             var task = Task.Run(async () =>
             {
@@ -126,42 +149,27 @@ namespace OnlineChat.Site.Components
 
                 }
 
-                await InstantMessager.UnsubscribeAsync();
-                await InstantMessager.SubscribeAsync(ChatId);
-
                 _loading = false;
+                Console.WriteLine("first bunch");
+
                 StateHasChanged();
             });
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (_messageElements.Count != 0 && !_loading)
+            if (_messages.Count != 0 && !_loading)
             {
-                var behavior = "auto";
-                if (_firstLoad || _messageSent)
+                if (_isNewMessagesBarVisible && _firstLoad)
                 {
-                    _scrollTo = _messageElements.Count - 1;
-
-                    if (_messageSent) behavior = "smooth";
-
-                    Console.WriteLine("scroll to last");
+                    _firstLoad = false;
+                    await Js.InvokeAsync<bool>("scrollToView", NewMessagesDivider, new { behaviour = "auto" });
                 }
-
-                if (_loadedMore && _scrollTo >= _messageElements.Count)
+                else if (_loadedMore)
                 {
-                    _scrollTo = _messageElements.Count - 1;
-
-                    Console.WriteLine($"scroll to last {_scrollTo}");
+                    _loadedMore = false;
+                    //await Js.InvokeAsync<bool>("scrollToView", _messageElements.First(), new { behaviour = "auto" });
                 }
-
-                await Js.InvokeAsync<bool>("scrollToView", _messageElements[_scrollTo], new { behaviour = behavior });
-
-                if (!_allMessagesLoaded && (_loadedMore || _firstLoad)) await Js.InvokeVoidAsync("ScrollList.Init", _messageElements.First(), DotNetObjectReference.Create(this));
-
-                _loadedMore = false;
-                _firstLoad = false;
-                _messageSent = false;
             }
         }
 
@@ -177,6 +185,7 @@ namespace OnlineChat.Site.Components
                 if (nextBunch.Count == 0) _allMessagesLoaded = true;
                 _messages.AddRange(nextBunch);
                 _loadedMore = true;
+                _isNewMessagesBarVisible = false;
                 _scrollTo = _messages.Count - _scrollTo;
 
                 StateHasChanged();
@@ -266,6 +275,40 @@ namespace OnlineChat.Site.Components
         {
             _edit = args.Data as MessageViewModel;
             _messageText = _edit.Content.ToString();
+        }
+
+        [JSInvokable]
+        public async Task OnMessageInViewportAsync(int boxIdx)
+        {
+            if (boxIdx == _messages.Count - 1)
+            {
+                await LoadMore();
+            }
+
+            if (!_messages[boxIdx].IsRead && _messages[boxIdx].Author != Username)
+            {
+                await InstantMessager.MarkMessageAsReadAsync(_messages[boxIdx].Id, ChatId);
+                _messages[boxIdx].IsRead = true;
+            }
+        }
+
+        protected async Task OnScrollAsync()
+        {
+            var scrollAtTop = await Js.InvokeAsync<bool>("scrollAtTop", _scroll);
+
+            if (scrollAtTop)
+            {
+                await LoadMore();
+            }
+        }
+
+        protected async Task OnMouseOverMessageAsync(MessageViewModel message)
+        {
+            if (!message.IsRead && message.Author != Username)
+            {
+                await InstantMessager.MarkMessageAsReadAsync(message.Id, ChatId);
+                message.IsRead = true;
+            }
         }
     }
 }

@@ -43,11 +43,18 @@ namespace OnlineChat.Site.InstantMessaging
         public ChatInfo ChatInfo { get; set; }
     }
 
+    public class MessageReadEventArgs
+    {
+        public int MessageId { get; set; }
+        public int ChatId { get; set; }
+    }
+
     public class InstantMessager
     {
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event EventHandler<MessageDeletedEventArgs> MessageDeleted;
         public event EventHandler<MessageEditedEventArgs> MessageEdited;
+        public event EventHandler<MessageReadEventArgs> MessageRead;
         public event EventHandler<ChatCreatedEventArgs> ChatCreated;
 
         private HubConnection _connection;
@@ -74,6 +81,7 @@ namespace OnlineChat.Site.InstantMessaging
             _connection.On<MessageViewModel, int>("MessageSent", OnMessageReceived);
             _connection.On<MessageViewModel, int>("MessageEdited", OnMessageEdited);
             _connection.On<int, int, bool, string>("MessageDeleted", OnMessageDeleted);
+            _connection.On<int, int>("MessageRead", OnMessageRead);
             _connection.On<ChatInfo>("ChatCreated", OnChatCreated);
         }
 
@@ -82,26 +90,9 @@ namespace OnlineChat.Site.InstantMessaging
             if (_connection.State != HubConnectionState.Connected) await _connection.StartAsync();
         }
 
-        public async Task SubscribeAsync(int chatId)
+        public async Task MarkMessageAsReadAsync(int messageId, int chatId)
         {
-            if(_connection.State == HubConnectionState.Disconnected) await _connection.StartAsync();
-
-            try
-            {
-                await _connection.SendAsync("Subscribe", chatId);
-            }
-            catch (TaskCanceledException)
-            {
-                await UnsubscribeAsync();
-            }
-        }
-
-        public async Task UnsubscribeAsync()
-        {
-            if (_connection.State == HubConnectionState.Connected)
-            {
-                await _connection.SendAsync("UnSubscribe");
-            }
+            await _connection.SendAsync("MarkMessageAsRead", messageId, chatId);
         }
 
         private void OnMessageReceived(MessageViewModel message, int chatId)
@@ -138,6 +129,15 @@ namespace OnlineChat.Site.InstantMessaging
             ChatCreated?.Invoke(this, new ChatCreatedEventArgs()
             {
                 ChatInfo = chatInfo
+            });
+        }
+
+        private void OnMessageRead(int messageId, int chatId)
+        {
+            MessageRead?.Invoke(this, new MessageReadEventArgs()
+            {
+                ChatId = chatId,
+                MessageId = messageId
             });
         }
     }

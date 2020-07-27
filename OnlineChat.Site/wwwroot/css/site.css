@@ -220,7 +220,7 @@ td {
     border-color: dodgerblue;
 }
 
-    .message-box:last-child {
+    .message-box:first-child {
         margin-bottom: 0px;
     }
 
@@ -238,6 +238,15 @@ td {
     font-size: 14px;
     color: grey;
     justify-content: space-between;
+}
+
+.message-footer {
+    height: 20px;
+    font-size: 14px;
+    color: grey;
+    justify-content:space-between;
+    display:flex;
+    flex-direction: row-reverse;
 }
 
 .textarea {
@@ -268,7 +277,7 @@ td {
     padding: 5px;
     overflow-y:auto;
     display:flex;
-    flex-direction: column;
+    flex-direction:column-reverse;
 }
 
 /*.messages-wraper::-webkit-scrollbar {
@@ -310,6 +319,7 @@ td {
     padding: 5px;
     border-bottom: solid darkgrey;
     display: flex;
+    background-color: white;
 }
 
 .message {
@@ -381,3 +391,15 @@ td {
     .member-container > div {
         margin:2px;
     }
+
+.read-status-icon {
+    font-size: 20px!important;
+}
+
+.messages-new-divider {
+    background-color: #68727b;
+    text-align: center;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    color: white;
+}

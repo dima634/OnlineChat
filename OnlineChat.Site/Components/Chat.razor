@@ -2,35 +2,50 @@
 
 <div class="d-flex overflow-hidden">
     <div class="w-100 chat-container">
-        <div class="messages-wraper">
+        <div class="messages-wraper" @ref="_scroll" @onscroll="OnScrollAsync">
             @if (_loading)
             {
                 <MatProgressBar Indeterminate="true"></MatProgressBar>
             }
             else
             {
-                @foreach (var message in _messages.Reverse<MessageViewModel>())
-                 {
-                    var menyId = (AuthProvider as AuthStateProvider).Username == message.Author ?
-                                                                                    "extended" :
-                                                                                    "simple";
+                _isNewMessagesBarVisible = false;
 
-                    <div class="@(message.Author == (AuthProvider as AuthStateProvider).Username ? "message-box message-box-mine" : "message-box")">
+                @foreach (var message in _messages)
+                {
+                    var menyId = "simple";
+                    var messageBoxClass = "message-box";
+
+                    if ((AuthProvider as AuthStateProvider).Username == message.Author)
+                    {
+                        menyId = "extended";
+                        messageBoxClass = "message-box message-box-mine";
+                    }
+
+                    @if (!message.IsRead && Username != message.Author && !_isNewMessagesBarVisible)
+                    {
+                        _isNewMessagesBarVisible = true;
+                        <div @ref="NewMessagesDivider" class="messages-new-divider">New messages</div>
+                    }
+
+                    <div class="@messageBoxClass" @onmouseover="@(async () => await OnMouseOverMessageAsync(message))">
                         <ContextMenuTrigger CssClass="message"
                                             MenuId="@menyId"
                                             Data="message">
                             <MessageVisualizer Message="message" />
                         </ContextMenuTrigger>
                     </div>
-                 }
+                }
             }
         </div>
 
         @if (_replyTo != null)
         {
-            <div class="reply-box bg-light">
+            <div class="reply-box">
                 <MatIcon Class="icon-35px btn-send">reply</MatIcon>
-                <MessageVisualizer Message="_replyTo" />
+                <div class="message w-100">
+                    <MessageVisualizer Message="_replyTo" />
+                </div>
                 <MatIconButton Class="btn-send" Icon="close" OnClick="() => _replyTo = null" />
             </div>
         }
@@ -39,7 +54,9 @@
         {
             <div class="reply-box bg-light">
                 <MatIcon Class="icon-35px btn-send">edit</MatIcon>
-                <MessageVisualizer Message="_edit" />
+                <div class="message w-100">
+                    <MessageVisualizer Message="_edit" />
+                </div>
                 <MatIconButton Class="btn-send" Icon="close" OnClick="() => _edit = null" />
             </div>
         }
