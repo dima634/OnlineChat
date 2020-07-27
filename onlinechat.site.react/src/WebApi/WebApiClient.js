@@ -37,16 +37,23 @@ class Api {
         this.username = username;
     }
 
+    async registerAsync(username, password, confirmPassword){
+        var response = await this.postAsync("account/register", {
+            Username: username,
+            Password: password,
+            ConfirmPassword: confirmPassword
+        });
+
+        this.ensureOk(response);
+    }
+
     logout(){
         this.username = null;
         this.token = null;
     }
 
     ensureOk(response) {
-        if(response.status != 200) throw {
-            message: "Not OK status code",
-            status: response.status
-        };
+        if(response.status !== 200) throw new Error(response.json().message);
     }
 
     requestParams(method = "get", obj = null){
