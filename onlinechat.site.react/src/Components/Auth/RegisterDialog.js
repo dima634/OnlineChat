@@ -6,25 +6,27 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Avatar from '@material-ui/core/Avatar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Link from '@material-ui/core/Link';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import { withSnackbar } from 'notistack';
-import './LoginDialog.css'
+import './RegisterDialog.css'
 import Api from '../../WebApi/WebApiClient'
 
-class LoginDialog extends React.Component {
+class RegisterDialog extends React.Component {
     constructor(props){
         super(props);
 
         this.state = {
             username: "",
             password: "",
+            confirmPassword: "",
             errorMessage: null
         };
 
         this.onUsernameChanged = this.onUsernameChanged.bind(this);
         this.onPasswordChanged = this.onPasswordChanged.bind(this);
+        this.onPasswordChanged = this.onConfirmPasswordChanged.bind(this);
     }
 
     onUsernameChanged(event){
@@ -35,6 +37,10 @@ class LoginDialog extends React.Component {
         this.setState({password: event.target.value});
     }
 
+    onConfirmPasswordChanged(event){
+        this.setState({confirmPassword: event.target.value});
+    }
+
     async onLoginClickAsync(){
         var api = Api.instance();
 
@@ -42,7 +48,7 @@ class LoginDialog extends React.Component {
             await api.loginAsync(this.state.username, this.state.password);   
             this.props.onSuccessLogin();
         } catch (error) {
-            this.props.enqueueSnackbar("Username or password is incorrect", { 
+            this.props.enqueueSnackbar(error.errorMessage, { 
                 variant: 'error',
                 anchorOrigin: {
                     vertical: 'bottom',
@@ -59,17 +65,16 @@ class LoginDialog extends React.Component {
                     <CssBaseline />
                     <div className="paper">
                         <Avatar className="avatar">
-                        <LockOutlinedIcon />
+                            <PersonOutlineIcon/>
                         </Avatar>
                         <Typography component="h1" className="text-center" variant="h5">
-                        Sign in
+                            Sign Up
                         </Typography>
                         <TextField
                             variant="outlined"
                             margin="normal"
                             required
                             fullWidth
-                            id="email"
                             label="Username"
                             name="username"
                             autoFocus
@@ -84,9 +89,19 @@ class LoginDialog extends React.Component {
                             name="password"
                             label="Password"
                             type="password"
-                            id="password"
                             value={this.state.password}
                             onChange={this.onPasswordChanged}
+                        />
+                        <TextField
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Password"
+                            type="password"
+                            value={this.state.confirmPassword}
+                            onChange={this.onConfirmPasswordChanged}
                         />
                         <Button
                             type="submit"
@@ -96,11 +111,11 @@ class LoginDialog extends React.Component {
                             className="submit"
                             onClick={() => this.onLoginClickAsync()}
                         >
-                            Sign In
+                            Sign Up
                         </Button>
-                        <Link onClick={ () => this.props.onLinkClicked()}>
+                        <Link onClick={() => this.props.onLinkClicked()}>
                             <Typography className="text-center">
-                                Don't have an account? Sign Up
+                                Already have an account? Sign in
                             </Typography>
                         </Link>
                     </div>
@@ -111,4 +126,4 @@ class LoginDialog extends React.Component {
     }
   }
   
-  export default withSnackbar(LoginDialog);
+  export default withSnackbar(RegisterDialog);
