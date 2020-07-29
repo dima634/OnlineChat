@@ -52,6 +52,18 @@ class Api {
         this.token = null;
     }
 
+    async getChatsAsync(){
+        let response = await this.getAsync('chat/list');
+        this.ensureOk(response);
+        return response.json();
+    }
+
+    async getChatMessagesAsync(chatId, offset, resultsCount = 20){
+        let response = await this.getAsync(`chat/${chatId}/messages/?offset=${offset}&resultsPerPage=${resultsCount}`);
+        this.ensureOk(response);
+        return response.json();
+    }
+
     ensureOk(response) {
         if(response.status !== 200) throw new Error(response.json().message);
     }

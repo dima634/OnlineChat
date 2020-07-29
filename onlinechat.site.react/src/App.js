@@ -5,50 +5,72 @@ import './App.css';
 import { Typography, Button } from '@material-ui/core';
 import LoginDialog from './Components/Auth/LoginDialog';
 import { SnackbarProvider } from 'notistack';
-import Api from './WebApi/WebApiClient'
+import Api from './WebApi/WebApiClient';
 import RegisterDialog from './Components/Auth/RegisterDialog';
+import Navbar from './Components/Chat/Navbar';
+import Chat from './Components/Chat/Chat';
+import Grid from '@material-ui/core/Grid';
 
 class App extends React.Component {
   constructor(props){
     super(props);
 
     this.state = {
-      isLoginDialogOpen: false,
-      isRegisterDialogOpen: false
+      isLoginDialogOpen: true,
+      isRegisterDialogOpen: false,
+      chats: [],
+      selectedChatId: null
     };
+  }
+
+  resetState(){
+    this.setState({
+      isLoginDialogOpen: true,
+      isRegisterDialogOpen: false,
+      chats: [],
+      selectedChatId: null
+    });
   }
 
   render() {
     let username = Api.instance().username;
     let authBar;
+    let chat = null;
 
     if(username == null) {
-      authBar = <Button onClick={() => this.setState({isLoginDialogOpen: true})}>Log in</Button>;
+      authBar = <Button color="inherit" onClick={() => this.setState({isLoginDialogOpen: true})}>Log in</Button>;
     }
     else {
       const onLogoutClick = () => {
         Api.instance().logout();
-        this.forceUpdate();
+        this.resetState();
       };
 
       authBar = (
         <Fragment>
           <Typography>Hello, {username}</Typography>
-          <Button onClick={() => onLogoutClick()}>Log out</Button>
+          <Button color="inherit" onClick={() => onLogoutClick()}>Log out</Button>
         </Fragment>
       );
     }
 
-    const onSuccessLogin = () => {
-      this.setState({isLoginDialogOpen: false});
+    const onSuccessLogin = async () => {
+      this.setState({
+        isLoginDialogOpen: false,
+        chats: await Api.instance().getChatsAsync()
+      });
       this.forceUpdate()
     };
+
+    if(this.state.selectedChatId != null){
+      chat = <Chat chatId={this.state.selectedChatId} api={Api.instance()}/>
+    }
 
     return (
       <SnackbarProvider maxSnack={5}>
         <AppBar position="static">
           <Toolbar>
-            <Typography variant="h6">Online chat</Typography>
+            <Typography className="title" variant="h6">Online chat</Typography>
             {authBar}
           </Toolbar>
 
@@ -64,6 +86,14 @@ class App extends React.Component {
             isOpen={this.state.isRegisterDialogOpen}
           />
         </AppBar>
+        <Grid container className="content">
+          <Grid item xs={1}>
+            <Navbar chats={this.state.chats} onChatSelected={(chatId) => this.setState({selectedChatId: chatId})}/>
+          </Grid>
+          <Grid item xs={11}>
+            {chat}
+          </Grid>
+        </Grid>
       </SnackbarProvider>
     );
   }

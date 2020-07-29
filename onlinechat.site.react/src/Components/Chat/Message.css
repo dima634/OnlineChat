@@ -1,0 +1,42 @@
+.message-header {
+    height: 20px;
+    display: flex;
+    font-size: 14px;
+    color: grey;
+    justify-content: space-between;
+}
+
+.message-footer {
+    height: 20px;
+    font-size: 14px;
+    color: grey;
+    justify-content:space-between;
+    display:flex;
+    flex-direction: row-reverse;
+}
+
+.message-box {
+    box-sizing: border-box;
+    margin-right: auto;
+    overflow-wrap: break-word;
+    margin-bottom: 5px;
+    border-color: inherit;
+    max-width: 100%;
+    padding: 10px;
+    background-color: white;
+    color: black;
+    border-radius: 0px 10px 10px 10px;
+    border-color: dodgerblue;
+}
+
+    .message-box:first-child {
+        margin-bottom: 0px;
+    }
+
+    .message-box.message-box-mine {
+        margin-right: 0;
+        margin-left:auto;
+        background-color: #def3d8;
+        border-radius: 10px 0px 10px 10px;
+        border-color: seagreen;
+    }

@@ -1,0 +1,28 @@
+.message-list {
+    list-style-type: none;    
+    padding: 5px;
+    display:flex;
+    flex-direction:column-reverse;
+    background-color: #264563;
+    margin: 0;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.message-list::-webkit-scrollbar {
+    width: 10px;
+    background-color: #6c757d85;
+}
+
+.message-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+    background: #77818a;
+    border-radius: 5px;
+}
+
+    .message-list::-webkit-scrollbar-thumb:hover {
+        background: #a0aebb;
+    }
