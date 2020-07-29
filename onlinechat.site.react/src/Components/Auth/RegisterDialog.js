@@ -98,7 +98,7 @@ class RegisterDialog extends React.Component {
                             required
                             fullWidth
                             name="password"
-                            label="Password"
+                            label="Confirm password"
                             type="password"
                             value={this.state.confirmPassword}
                             onChange={this.onConfirmPasswordChanged}
