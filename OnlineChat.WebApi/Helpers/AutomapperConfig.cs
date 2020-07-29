@@ -6,6 +6,7 @@ using OnlineChat.Dtos.ViewModels;
 using OnlineChat.WebApi.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace OnlineChat.WebApi.Helpers
                     }));
 
                 cfg.CreateMap<MessageModel, Message>()
-                    .ForMember(m => m.SentOn, opt => opt.MapFrom(tm => DateTime.Now))
+                    .ForMember(m => m.SentOn, opt => opt.MapFrom(tm => DateTime.Now.ToString("MMM dd hh:mm yyyy", CultureInfo.InvariantCulture)))
                     .ForMember(m => m.Content, opt => opt.MapFrom((model, message) =>
                     {
                         MessageContent content = model.ContentType switch

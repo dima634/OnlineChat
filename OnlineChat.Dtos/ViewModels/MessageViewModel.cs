@@ -15,7 +15,7 @@ namespace OnlineChat.Dtos.ViewModels
 
         public object Content { get; set; }
 
-        public DateTime SentOn { get; set; }
+        public string SentOn { get; set; }
 
         public bool IsEdited { get; set; }
 
