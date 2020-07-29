@@ -32,7 +32,7 @@ namespace OnlineChat.Dtos.ViewModels
             }
         }
 
-        public ContentType ContentType { get; set; }
+        public string ContentType { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

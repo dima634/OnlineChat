@@ -31,7 +31,7 @@ namespace OnlineChat.WebApi.Helpers
                             _ => throw new ApplicationException($"Unknown content type: {m.Content.GetType().FullName}")
                         };
 
-                        return type;
+                        return type.ToString();
                     }))
                     .ForMember(vm => vm.Content, opt => opt.MapFrom((m, vm) =>
                     {

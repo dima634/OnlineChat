@@ -26,7 +26,7 @@
 
 @switch (Message.ContentType)
 {
-    case ContentType.Text:
+    case ContentType.Text.ToString():
         <TextMessage Text="@Message.Content.ToString()"/>
         break;
     default:
