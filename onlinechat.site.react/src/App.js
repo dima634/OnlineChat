@@ -6,6 +6,7 @@ import { Typography, Button } from '@material-ui/core';
 import LoginDialog from './Components/Auth/LoginDialog';
 import { SnackbarProvider } from 'notistack';
 import Api from './WebApi/WebApiClient';
+import InstantMessager from './InstantMessaging/InstantMessager';
 import RegisterDialog from './Components/Auth/RegisterDialog';
 import Navbar from './Components/Chat/Navbar';
 import Chat from './Components/Chat/Chat';
@@ -14,6 +15,8 @@ import Grid from '@material-ui/core/Grid';
 class App extends React.Component {
   constructor(props){
     super(props);
+
+    this.messager = new InstantMessager();
 
     this.state = {
       isLoginDialogOpen: true,
@@ -42,6 +45,7 @@ class App extends React.Component {
     }
     else {
       const onLogoutClick = () => {
+        this.messager.offlineAsync();
         Api.instance().logout();
         this.resetState();
       };
@@ -55,15 +59,15 @@ class App extends React.Component {
     }
 
     const onSuccessLogin = async () => {
+      this.messager.onlineAsync();
       this.setState({
         isLoginDialogOpen: false,
         chats: await Api.instance().getChatsAsync()
       });
-      this.forceUpdate()
     };
 
     if(this.state.selectedChatId != null){
-      chat = <Chat chatId={this.state.selectedChatId} api={Api.instance()}/>
+      chat = <Chat chatId={this.state.selectedChatId} api={Api.instance()} messager={this.messager}/>
     }
 
     return (

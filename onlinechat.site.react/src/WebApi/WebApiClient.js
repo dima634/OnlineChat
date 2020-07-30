@@ -53,15 +53,34 @@ class Api {
     }
 
     async getChatsAsync(){
-        let response = await this.getAsync('chat/list');
+        const response = await this.getAsync('chat/list');
         this.ensureOk(response);
         return response.json();
     }
 
     async getChatMessagesAsync(chatId, offset, resultsCount = 20){
-        let response = await this.getAsync(`chat/${chatId}/messages/?offset=${offset}&resultsPerPage=${resultsCount}`);
+        const response = await this.getAsync(`chat/${chatId}/messages/?offset=${offset}&resultsPerPage=${resultsCount}`);
         this.ensureOk(response);
         return response.json();
+    }
+
+    async sendMessageAsync(message, chatId) {
+        const response = await this.postAsync(`chat/${chatId}/messages/send`, message);
+        this.ensureOk(response);
+    }
+
+    async deleteMessageAsync(messageId, deleteForAll) {
+        const response = await this.postAsync(`message/delete`, {Id: messageId, DeleteForAll: deleteForAll});
+        this.ensureOk(response);
+    }
+
+    async editMessageAsync(messageId, newContent, contentType) {
+        const response = await this.postAsync(`message/edit`, {
+            Id: messageId, 
+            Content: newContent,
+            ContentType: contentType
+        });
+        this.ensureOk(response);
     }
 
     ensureOk(response) {

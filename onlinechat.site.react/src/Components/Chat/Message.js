@@ -5,11 +5,40 @@ import DoneAllIcon from '@material-ui/icons/DoneAll';
 import TextContent from './TextContent'
 
 class Message extends React.Component {
+    constructor(props){
+        super(props);
+
+        this.element = React.createRef();
+    }
+
+    renderContent(message){
+        if(message.ContentType === 'Text'){
+            return <TextContent text={message.Content}/>
+        }
+        else {
+            throw Error('Unknown content type');
+        }
+    }
+
     render(){
         let readStatus;
         let editStatus;
-        let messageContent;
+        const messageContent = this.renderContent(this.props.message);;
         let messageBoxClass = "message-box";
+        let reply;
+
+        if(this.props.message.ReplyTo) {
+            if(this.props.message.ReplyTo == null){
+                reply = <p>Deleted</p>
+            }
+            else{
+                reply = (
+                    <div className="message-reply">
+                        {this.renderContent(this.props.message.ReplyTo)}
+                    </div>
+                );
+            }
+        }
 
         if(this.props.message.Author === this.props.api.username){
             messageBoxClass += " message-box-mine";
@@ -26,19 +55,18 @@ class Message extends React.Component {
             readStatus = <DoneIcon/>
         }
 
-        if(this.props.message.ContentType === 'Text'){
-            messageContent = <TextContent text={this.props.message.Content}/>
-        }
-        else {
-            throw Error('Unknown content type');
-        }
-
         return (
-            <li className={messageBoxClass}>
+            <li 
+                onContextMenu={(ev) => { ev.preventDefault(); this.props.onContextMenu(ev, this.props.message); }} 
+                className={messageBoxClass}
+                ref={this.element}
+            >
                 <div className="message-header">
                     <p>{this.props.message.Author}</p>
                     <p>{this.props.message.SentOn}</p>
                 </div>
+
+                {reply}
 
                 {messageContent}
 

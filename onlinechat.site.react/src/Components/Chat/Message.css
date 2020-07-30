@@ -6,6 +6,10 @@
     justify-content: space-between;
 }
 
+    .message-header > * {
+        margin: 0;
+    }
+
 .message-footer {
     height: 20px;
     font-size: 14px;
@@ -15,7 +19,18 @@
     flex-direction: row-reverse;
 }
 
+    .message-footer > * {
+        margin: 0;
+    }
+
+.message-reply {
+    border-left: 4px solid;
+    padding-left: 5px;
+    border-color: inherit;
+}
+
 .message-box {
+    min-width: 250px;
     box-sizing: border-box;
     margin-right: auto;
     overflow-wrap: break-word;
@@ -39,4 +54,8 @@
         background-color: #def3d8;
         border-radius: 10px 0px 10px 10px;
         border-color: seagreen;
+    }
+
+    .message-box > * {
+        margin: 0;
     }

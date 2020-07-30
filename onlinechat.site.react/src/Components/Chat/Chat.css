@@ -1,0 +1,35 @@
+.chat-message-area {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+}
+
+.chat-message-input {
+    overflow: auto;
+    flex-grow: 1;
+}
+
+    .chat-message-input::-webkit-scrollbar {
+        display: none;
+    }
+
+    .chat-message-input > * {
+        height: 100%;
+        padding: 10px!important;   
+    }
+
+.chat-message-input-box {
+    display: flex;
+}
+
+.chat-reply-box {
+    align-items: center;
+    padding: 5px;
+    border-bottom: solid darkgrey;
+    display: flex;
+    background-color: white;
+}
+
+.chat-reply-box-content {
+    width: 100%;
+}

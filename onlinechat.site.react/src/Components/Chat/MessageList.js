@@ -18,7 +18,7 @@ class MessageList extends React.Component {
     render(){
         return (
             <ul className="message-list" onScroll={() => this.onScroll()} ref={this.list}>
-                {this.props.messages.map((message) => <Message message={message} key={message.Id} api={this.props.api}/>)}
+                {this.props.messages.map((message) => <Message onContextMenu={this.props.onContextMenu} message={message} key={message.Id} api={this.props.api}/>)}
             </ul>
         );
     }
