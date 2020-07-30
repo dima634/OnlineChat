@@ -46,10 +46,10 @@ namespace OnlineChat.WebApi.Helpers
                     }));
 
                 cfg.CreateMap<MessageModel, Message>()
-                    .ForMember(m => m.SentOn, opt => opt.MapFrom(tm => DateTime.Now.ToString("MMM dd hh:mm yyyy", CultureInfo.InvariantCulture)))
+                    .ForMember(m => m.SentOn, opt => opt.MapFrom(tm => DateTime.Now))
                     .ForMember(m => m.Content, opt => opt.MapFrom((model, message) =>
                     {
-                        MessageContent content = model.ContentType switch
+                        MessageContent content = ContentType.Parse<ContentType>(model.ContentType) switch
                         {
                             ContentType.Text => new TextContent() { Text = model.Content.ToString() },
                             _ => throw new ApplicationException($"Unsupported content type: {model.ContentType}")
