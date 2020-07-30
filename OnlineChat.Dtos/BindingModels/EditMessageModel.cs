@@ -10,6 +10,6 @@ namespace OnlineChat.Dtos.BindingModels
 
         public object Content { get; set; }
 
-        public ContentType ContentType { get; set; }
+        public string ContentType { get; set; }
     }
 }

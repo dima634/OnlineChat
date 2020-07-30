@@ -81,7 +81,7 @@ namespace OnlineChat.WebApi.Helpers
                 cfg.CreateMap<EditMessageModel, MessageContent>()
                     .ConstructUsing((model, context) =>
                     {
-                        MessageContent content = model.ContentType switch
+                        MessageContent content = ContentType.Parse<ContentType>(model.ContentType) switch
                         {
                             ContentType.Text => new TextContent() { Text = model.Content.ToString() },
                             _ => throw new ApplicationException("Unsuported content type")
