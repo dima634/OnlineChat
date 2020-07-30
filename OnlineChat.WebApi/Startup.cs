@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using OnlineChat.WebApi.Helpers;
 using OnlineChat.WebApi.Models;
 using OnlineChat.WebApi.Models.Repos;
@@ -39,7 +40,11 @@ namespace OnlineChat.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR()
-                    .AddNewtonsoftJsonProtocol(opt => opt.PayloadSerializerSettings.TypeNameHandling = TypeNameHandling.Objects);
+                    .AddNewtonsoftJsonProtocol(opt =>
+                    {
+                        opt.PayloadSerializerSettings.TypeNameHandling = TypeNameHandling.Objects;
+                        opt.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver();
+                    });
             services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
             services.AddResponseCompression(opts =>
             {
@@ -114,9 +119,10 @@ namespace OnlineChat.WebApi
 
             app.UseCors(builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.AllowCredentials()
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
+                       .AllowAnyHeader()
+                       .SetIsOriginAllowed(origin => true);
             });
 
             app.UseRouting();
