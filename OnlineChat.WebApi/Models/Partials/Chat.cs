@@ -12,5 +12,9 @@ namespace OnlineChat.WebApi.Models
         [NotMapped]
         public List<User> Members
             => ChatMembers.Where(cm => cm.ChatId == Id).Select(cm => cm.User).ToList();
+
+        [NotMapped]
+        public int UnreadByCurrentUserMessagesCount { get; set; }
     }
 }
+ 

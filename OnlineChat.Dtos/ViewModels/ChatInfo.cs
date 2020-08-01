@@ -9,6 +9,8 @@ namespace OnlineChat.Dtos.ViewModels
         public int Id { get; set; }
 
         public string[] Members { get; set; }
+
+        public int UnreadByCurrentUserMessagesCount { get; set; }
     }
 
     public class GroupChatInfo : ChatInfo

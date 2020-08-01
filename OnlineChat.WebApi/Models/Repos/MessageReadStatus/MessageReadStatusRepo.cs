@@ -18,7 +18,7 @@ namespace OnlineChat.WebApi.Models.Repos
             => Table.Any(readStatus => readStatus.MessageId == messageId && readStatus.Username != author);
 
         public bool IsMessageReadByUser(string username, int messageId)
-            => Table.Find(new { messageId, username })?.IsRead ?? false;
+            => Table.Find(messageId, username)?.IsRead ?? false;
 
         public void MarkRead(string username, int messageId)
         {

@@ -89,7 +89,13 @@ namespace OnlineChat.WebApi.Controllers
 
             if (messages == null) return BadRequest();
 
-            var mapped = _mapper.Map<IEnumerable<MessageViewModel>>(messages);
+            var mapped = _mapper.Map<IEnumerable<Message>, IEnumerable<MessageViewModel>>(messages, opt => opt.AfterMap((src, dest) =>
+            {
+                foreach ((Message message, MessageViewModel viewModel) in src.Zip(dest))
+                {
+                    viewModel.IsReadByCurrentUser = _chatService.IsMessageReadByUser(message.Id, User.Identity.Name);
+                }
+            }));
 
             return this.JsonContent(mapped, TypeNameHandling.Auto);
         }

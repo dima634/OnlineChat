@@ -23,6 +23,7 @@ namespace OnlineChat.WebApi.Services
         List<Message> GetChatMessagesByOffset(int chatId, string username, int offset, int resultCount);
         bool IsChatMember(int chatId, string username);
         bool IsMessageAuthor(int messageId, string username);
+        bool IsMessageReadByUser(int messageId, string username);
         void MarkMessageAsReadByUser(int messageId, string username);
     }
 }

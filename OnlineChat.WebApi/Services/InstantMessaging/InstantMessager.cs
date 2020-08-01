@@ -39,7 +39,7 @@ namespace OnlineChat.WebApi.Services
         public void MarkMessageAsRead(int messageId, int chatId)
         {
             _messageReadStatusRepo.MarkRead(Context.User.Identity.Name, messageId);
-            Clients.Clients(_subscriptionManager.GetActiveChatMembers(chatId).ToList()).MessageRead(messageId, chatId);
+            Clients.Clients(_subscriptionManager.GetActiveChatMembers(chatId).ToList()).MessageRead(messageId, chatId, Context.User.Identity.Name);
         }
 
         public override Task OnConnectedAsync()

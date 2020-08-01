@@ -17,7 +17,23 @@ namespace OnlineChat.WebApi.Models.Repos
             => Table.Include(chat => chat.ChatMembers).ThenInclude(cm => cm.User).First(chat => chat.Id == chatId).Members;
 
         public List<Chat> GetUserChats(string username)
-            => Table.Include(chat => chat.ChatMembers).ThenInclude(cm => cm.User).Where(chat => chat.ChatMembers.Any(cm => cm.Username == username)).ToList();
+        {
+            Func<Message, string, bool> isMessageRead = (message, username) =>
+                                    message.MessagesReadStatus.Any(rs => rs.Username == username && rs.MessageId == message.Id && rs.IsRead);
+            var chats = Table.Include(chat => chat.ChatMembers)
+                            .ThenInclude(cm => cm.User)
+                            .Include(chat => chat.Messages)
+                            .ThenInclude(message => message.MessagesReadStatus)
+                            .Where(chat => chat.ChatMembers.Any(cm => cm.Username == username)).ToArray();
+
+            var unread = chats.Select(chat => chat.Messages.Count(message => message.Author.Nickname != username && !isMessageRead(message, username))).ToArray();
+
+            return chats.Zip(unread, (chat, unreadCount) =>
+            {
+                chat.UnreadByCurrentUserMessagesCount = unreadCount;
+                return chat;
+            }).ToList();
+        }
 
         public DirectChat GetDirectChat(string participant1, string participant2)
         {
