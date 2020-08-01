@@ -3,32 +3,68 @@ import './Navbar.css'
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import Api from '../../WebApi/WebApiClient'
+import Api from '../../WebApi/WebApiClient';
+import Badge from '@material-ui/core/Badge';
 
 class Navbar extends React.Component {
     render() {
         return (
             <List component="nav">
-                {this.props.chats.map((chat) => <ChatLink onChatClick={this.props.onChatSelected} key={chat.Id} chat={chat}/>)}
+                {this.props.chats.map((chat) => <ChatLink onChatClick={this.props.onChatSelected} 
+                                                            messager={this.props.messager} 
+                                                            key={chat.Id} 
+                                                            chat={chat}
+                                                            api={this.props.api}/>)}
             </List>
         );
     }
 }
 
-function ChatLink(props) {
-    let chatName;
-    if(props.chat.Name !== undefined){
-        chatName = props.chat.Name
-    }
-    else{
-        chatName = props.chat.Members.find(user => user !== Api.instance().username)
+class ChatLink extends React.Component {
+    constructor(props){
+        super(props);
+
+        this.state = {
+            unreadMessagesCount: this.props.chat.UnreadByCurrentUserMessagesCount
+        };
+
+        this.onMessageRead = this.onMessageRead.bind(this);
+        this.onMessageReceived = this.onMessageReceived.bind(this);
     }
 
-    return (
-        <ListItem onClick={() => props.onChatClick(props.chat.Id)} button>
-            <ListItemText primary={chatName}/>
-        </ListItem>
-    );
+    onMessageRead(args){
+        if(this.props.chat.Id === args.chatId && this.props.api.username === args.readBy){
+            this.setState({unreadMessagesCount: this.state.unreadMessagesCount - 1});
+        }
+    }
+
+    onMessageReceived(args){
+        if(this.props.chat.Id === args.chatId && !args.message.IsReadByCurrentUser){
+            this.setState({unreadMessagesCount: this.state.unreadMessagesCount + 1});
+        }
+    }
+
+    componentDidMount(){
+        this.props.messager.messageRead.push(this.onMessageRead);
+        this.props.messager.messageReceived.push(this.onMessageReceived);
+    }
+
+    render (){
+        let chatName;
+        if(this.props.chat.Name !== undefined){
+            chatName = this.props.chat.Name
+        }
+        else{
+            chatName = this.props.chat.Members.find(user => user !== Api.instance().username)
+        }
+
+        return (
+            <ListItem onClick={() => this.props.onChatClick(this.props.chat.Id)} button>
+                <ListItemText primary={chatName}/>
+                <Badge badgeContent={this.state.unreadMessagesCount} color="primary"/>
+            </ListItem>
+        );
+    }
 }
 
 export default Navbar;

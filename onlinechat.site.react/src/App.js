@@ -92,7 +92,7 @@ class App extends React.Component {
         </AppBar>
         <Grid container className="content">
           <Grid item xs={1}>
-            <Navbar chats={this.state.chats} onChatSelected={(chatId) => this.setState({selectedChatId: chatId})}/>
+            <Navbar chats={this.state.chats} api={Api.instance()} messager={this.messager} onChatSelected={(chatId) => this.setState({selectedChatId: chatId})}/>
           </Grid>
           <Grid item xs={11}>
             {chat}

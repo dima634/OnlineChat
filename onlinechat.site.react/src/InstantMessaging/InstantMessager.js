@@ -78,13 +78,18 @@ class InstantMessager {
         });
     }
 
-    onMessageRead(messageId, chatId) {
+    onMessageRead(messageId, chatId, readBy) {
         this.messageRead.forEach(callback => {
             callback({
                 messageId: messageId,
-                chatId: chatId
+                chatId: chatId,
+                readBy: readBy
             });
         });
+    }
+
+    async markMessageAsReadAsync(messageId, chatId){
+        await this.connection.send("MarkMessageAsRead", messageId, chatId);
     }
 }
 

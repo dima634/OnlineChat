@@ -29,10 +29,7 @@ class Chat extends React.Component {
         this.onMessageReceived = this.onMessageReceived.bind(this);
         this.onMessageDeleted = this.onMessageDeleted.bind(this);
         this.onMessageEdited = this.onMessageEdited.bind(this);
-
-        this.props.messager.messageReceived.push(this.onMessageReceived);
-        this.props.messager.messageDeleted.push(this.onMessageDeleted);
-        this.props.messager.messageEdited.push(this.onMessageEdited);
+        this.onMessageRead = this.onMessageRead.bind(this);
     }
 
     loadMoreMessages(){
@@ -65,6 +62,7 @@ class Chat extends React.Component {
             if(args.author === this.props.api.username || args.forAll){
                 let idx = this.state.messages.findIndex(mes => mes.Id === args.messageId);
                 this.state.messages.splice(idx, 1);
+                this.setState({messages: this.state.messages});
             }
         }
     }
@@ -72,7 +70,19 @@ class Chat extends React.Component {
     onMessageEdited(args){
         if(args.chatId === this.props.chatId) {
             let idx = this.state.messages.findIndex(mes => mes.Id === args.message.Id);
+            // eslint-disable-next-line
             this.state.messages[idx].Content = args.message.Content;
+            // eslint-disable-next-line
+            this.state.messages[idx].IsEdited = true;
+            this.forceUpdate();
+        }
+    }
+
+    onMessageRead(args){
+        if(args.chatId === this.props.chatId) {
+            let idx = this.state.messages.findIndex(mes => mes.Id === args.messageId);
+            // eslint-disable-next-line
+            this.state.messages[idx].IsRead = true;
             this.forceUpdate();
         }
     }
@@ -136,14 +146,27 @@ class Chat extends React.Component {
 
     componentDidMount(){
         this.props.api.getChatMessagesAsync(this.props.chatId, 0)
-            .then(messages => this.setState({messages: messages}));
+            .then(messages => {
+                this.props.messager.messageReceived.push(this.onMessageReceived);
+                this.props.messager.messageDeleted.push(this.onMessageDeleted);
+                this.props.messager.messageEdited.push(this.onMessageEdited);
+                this.props.messager.messageRead.push(this.onMessageRead);
+                this.setState({messages: messages});
+            });
     }
 
     componentDidUpdate(prevProps, prevState, snapshot){
         if(prevProps.chatId !== this.props.chatId){
             this.loadedAllMessages = false;
             this.props.api.getChatMessagesAsync(this.props.chatId, 0)
-                .then(messages => this.setState({messages: messages}));
+                .then(messages => this.setState({
+                    messages: messages,
+                    messageText: "",
+                    editMessage: null,
+                    contextMenu: false,
+                    mouseY: 0,
+                    mouseX: 0
+                }));
         }
     }
 
@@ -171,6 +194,11 @@ class Chat extends React.Component {
                 <MessageList 
                     messages={this.state.messages} 
                     api={this.props.api} 
+                    onMessageInViewport={(message) => {
+                        if(!message.IsReadByCurrentUser && message.Author !== this.props.api.username) {
+                            this.props.messager.markMessageAsReadAsync(message.Id, this.props.chatId);
+                        }
+                    }}
                     onTop={() => this.loadMoreMessages()}
                     onContextMenu={ (ev, mes) => this.onContextMenu(ev, mes) }
                 />
@@ -206,6 +234,7 @@ class Chat extends React.Component {
                 >
                     <MenuItem onClick={() => this.onEditClick()}>Edit</MenuItem>
                     <MenuItem onClick={() => this.onDeleteClick(true)}>Delete</MenuItem>
+                    <MenuItem onClick={() => this.onDeleteClick(false)}>Delete for me</MenuItem>
                 </Menu>
             </div>
         );

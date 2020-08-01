@@ -3,6 +3,7 @@ import './Message.css'
 import DoneIcon from '@material-ui/icons/Done';
 import DoneAllIcon from '@material-ui/icons/DoneAll';
 import TextContent from './TextContent'
+import handleViewport from 'react-in-viewport';
 
 class Message extends React.Component {
     constructor(props){
@@ -48,11 +49,13 @@ class Message extends React.Component {
             editStatus = <p>Edited</p>;
         }
 
-        if(this.props.message.IsRead){
-            readStatus = <DoneAllIcon/>;
-        }
-        else{
-            readStatus = <DoneIcon/>
+        if(this.props.message.Author === this.props.api.username){
+            if(this.props.message.IsRead){
+                readStatus = <DoneAllIcon/>;
+            }
+            else{
+                readStatus = <DoneIcon/>
+            }
         }
 
         return (
@@ -79,4 +82,4 @@ class Message extends React.Component {
     }
 }
 
-export default Message;
+export default handleViewport(Message, {}, {disconnectOnLeave: true});
