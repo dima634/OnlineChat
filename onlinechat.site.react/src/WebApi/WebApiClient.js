@@ -83,6 +83,22 @@ class Api {
         this.ensureOk(response);
     }
 
+    async getUsenamesStartsWithAsync(str) {
+        const response = await this.getAsync(`user/search/${str}`);
+        this.ensureOk(response);
+        return response.json();
+    }
+
+    async createDirectChatAsync(withUser){
+        const response = await this.postAsync("chat/create/direct", { WithUser: withUser});
+        this.ensureOk(response);
+    }
+
+    async createGroupAsync(members, groupName){
+        const response = await this.postAsync("chat/create/group", { Name: groupName, Members: members});
+        this.ensureOk(response);
+    }
+
     ensureOk(response) {
         if(response.status !== 200) throw new Error(response.json().message);
     }

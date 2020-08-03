@@ -11,7 +11,7 @@
     }
 
 .message-footer {
-    height: 20px;
+    /* height: 20px; */
     font-size: 14px;
     color: grey;
     justify-content:space-between;

@@ -5,17 +5,36 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Api from '../../WebApi/WebApiClient';
 import Badge from '@material-ui/core/Badge';
+import CreateChatDialog from './CreateChatView';
+import { Button, Box } from '@material-ui/core';
 
 class Navbar extends React.Component {
+    constructor(props){
+        super(props);
+
+        this.state = {
+            isCreateChatDialogOpen: false
+        };
+    }
+
     render() {
         return (
-            <List component="nav">
-                {this.props.chats.map((chat) => <ChatLink onChatClick={this.props.onChatSelected} 
-                                                            messager={this.props.messager} 
-                                                            key={chat.Id} 
-                                                            chat={chat}
-                                                            api={this.props.api}/>)}
-            </List>
+            <Box>
+                <Button className="navbar-create-chat-button" variant="outlined" color="primary" onClick={() => this.setState({ isCreateChatDialogOpen: true })}>New chat</Button>
+                <List component="nav">
+                    {this.props.chats.map((chat) => <ChatLink onChatClick={this.props.onChatSelected} 
+                                                                messager={this.props.messager} 
+                                                                key={chat.Id} 
+                                                                chat={chat}
+                                                                api={this.props.api}/>)}
+                </List>
+
+                <CreateChatDialog 
+                    isOpen={this.state.isCreateChatDialogOpen}
+                    onClose={() => this.setState({ isCreateChatDialogOpen: false })}
+                    api = {this.props.api}
+                 />
+            </Box>
         );
     }
 }

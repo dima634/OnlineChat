@@ -1,0 +1,14 @@
+.create-chat-input {
+    margin: 5px!important;
+}
+
+.create-chat-autocomplete {
+    margin: 5px!important;
+    flex-grow: 1;
+    display: inline-flex;
+    min-width: 242px;
+}
+
+.create-chat-chip {
+    margin: 2px;
+}

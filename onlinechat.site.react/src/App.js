@@ -24,6 +24,13 @@ class App extends React.Component {
       chats: [],
       selectedChatId: null
     };
+
+    this.onChatCreated = this.onChatCreated.bind(this);
+  }
+
+  onChatCreated(chat){
+    this.state.chats.push(chat);
+    this.forceUpdate();
   }
 
   resetState(){
@@ -33,6 +40,10 @@ class App extends React.Component {
       chats: [],
       selectedChatId: null
     });
+  }
+
+  componentDidMount(){
+    this.messager.chatCreated.push(this.onChatCreated);
   }
 
   render() {
