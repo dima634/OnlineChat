@@ -3,6 +3,7 @@ import MessageList from './MessageList'
 import { TextField } from '@material-ui/core';
 import SendIcon from '@material-ui/icons/Send';
 import EditIcon from '@material-ui/icons/Edit';
+import ReplyIcon from '@material-ui/icons/Reply';
 import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
@@ -20,7 +21,9 @@ class Chat extends React.Component {
             messages: [],
             messageText: "",
             editMessage: null,
+            replyTo: null,
             contextMenu: false,
+            replyContextMenu: false,
             mouseY: 0,
             mouseX: 0
         };
@@ -104,11 +107,11 @@ class Chat extends React.Component {
         let model = {
             Content: message,
             ContentType: "Text",
-            ReplyTo: null
+            ReplyTo: this.state.replyTo?.Id
         };
 
         this.props.api.sendMessageAsync(model, this.props.chatId);
-        this.setState({messageText: ""});
+        this.setState({messageText: "", replyTo: null});
     }
 
     sendOrEditMessage(){
@@ -121,10 +124,18 @@ class Chat extends React.Component {
     }
 
     onContextMenu(ev, message){
+        this.contextMenuMessage = message;
+
         if(message.Author === this.props.api.username){
-            this.contextMenuMessage = message;
             this.setState({
                 contextMenu: true,
+                mouseY: ev.clientY - 4,
+                mouseX: ev.clientX - 2
+            });
+        }
+        else {
+            this.setState({
+                replyContextMenu: true,
                 mouseY: ev.clientY - 4,
                 mouseX: ev.clientX - 2
             });
@@ -138,9 +149,18 @@ class Chat extends React.Component {
 
     onEditClick(){
         this.setState({
+            replyTo: null,
             editMessage: this.contextMenuMessage,
             messageText: this.contextMenuMessage.Content,
             contextMenu: false
+        });
+    }
+
+    onReplyClick(){
+        this.setState({
+            editMessage: null,
+            replyTo: this.contextMenuMessage,
+            replyContextMenu: false
         });
     }
 
@@ -173,16 +193,28 @@ class Chat extends React.Component {
     render() {
         let replyBox;
 
-        if(this.state.editMessage !== null){
+        if(this.state.editMessage !== null || this.state.replyTo !== null){
+            let icon;
+            let messageText;
+
+            if(this.state.editMessage !== null){
+                icon = <EditIcon color="primary"/>
+                messageText = this.state.editMessage.Content;
+            }
+            else{
+                icon = <ReplyIcon color="primary"/>
+                messageText = this.state.replyTo.Content;
+            }
+
             replyBox = (
                 <div className="chat-reply-box">
-                    <EditIcon color="primary"/>
+                    {icon}
 
                     <div className="chat-reply-box-content">
-                        <TextContent text={this.state.editMessage.Content}/>
+                        <TextContent text={messageText}/>
                     </div>
                     
-                    <IconButton onClick={() => this.setState({ editMessage: null, messageText: "" })} color="primary">
+                    <IconButton onClick={() => this.setState({ editMessage: null, replyTo: null, messageText: "" })} color="primary">
                         <CloseIcon/>
                     </IconButton>
                 </div>
@@ -235,6 +267,20 @@ class Chat extends React.Component {
                     <MenuItem onClick={() => this.onEditClick()}>Edit</MenuItem>
                     <MenuItem onClick={() => this.onDeleteClick(true)}>Delete</MenuItem>
                     <MenuItem onClick={() => this.onDeleteClick(false)}>Delete for me</MenuItem>
+                </Menu>
+
+                <Menu
+                    anchorReference="anchorPosition"
+                    anchorPosition={
+                      this.state.mouseY !== null && this.state.mouseX !== null
+                        ? { top: this.state.mouseY, left: this.state.mouseX }
+                        : undefined
+                    }
+                    keepMounted
+                    open={this.state.replyContextMenu}
+                    onClose={() => this.setState({replyContextMenu: false})}
+                >
+                    <MenuItem onClick={() => this.onReplyClick()}>Reply</MenuItem>
                 </Menu>
             </div>
         );
