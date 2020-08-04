@@ -179,7 +179,13 @@ namespace OnlineChat.WebApi.Services
         }
 
         public bool IsMessageReadByUser(int messageId, string username)
-            => _messageReadStatusRepo.IsMessageReadByUser(username, messageId);
+        {
+            var message = _messageRepo.GetMessage(messageId);
+            var result = _messageReadStatusRepo.IsMessageReadByUser(username, messageId) ||
+                         message.Author.Nickname == username;
+
+            return result;
+        }
 
         public void MarkMessageAsReadByUser(int messageId, string username)
         {
