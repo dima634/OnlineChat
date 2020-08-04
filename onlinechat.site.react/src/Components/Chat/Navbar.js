@@ -58,7 +58,7 @@ class ChatLink extends React.Component {
     }
 
     onMessageReceived(args){
-        if(this.props.chat.Id === args.chatId && !args.message.IsReadByCurrentUser){
+        if(this.props.chat.Id === args.chatId && args.message.Author !== this.props.api.username){
             this.setState({unreadMessagesCount: this.state.unreadMessagesCount + 1});
         }
     }
