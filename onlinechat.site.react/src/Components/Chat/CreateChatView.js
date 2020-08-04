@@ -3,7 +3,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import { DialogTitle, MenuItem, DialogActions, Button, TextField, InputAdornment, Divider, Box, Chip } from '@material-ui/core';
 import Select from '@material-ui/core/Select';
-import AccountCircle from '@material-ui/icons/AccountCircle';
 import GroupIcon from '@material-ui/icons/Group';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
