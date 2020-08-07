@@ -8,6 +8,8 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { withSnackbar } from 'notistack';
 import './CreateChatView.css';
+import Form from '../../DataValidation/Form';
+import ValidationResult from '../../DataValidation/ValidationResult';
 
 class CreateChatDialog extends React.Component {
     constructor(props){
@@ -19,11 +21,24 @@ class CreateChatDialog extends React.Component {
             suggestedUsernames: [],
             members: [],
             selectedUser: null,
-            groupName: ""
+            groupName: "",
+            validationErrors: []
         };
         
         this.submit = this.submit.bind(this);
         this.onChange = this.onChange.bind(this);
+    }
+
+    resetState(){
+        this.setState({
+            chatType: "Direct",
+            loadingSuggestions: false,
+            suggestedUsernames: [],
+            members: [],
+            selectedUser: null,
+            groupName: "",
+            validationErrors: []
+        });
     }
 
     submit(){
@@ -81,12 +96,23 @@ class CreateChatDialog extends React.Component {
         );
 
         if(this.state.chatType === 'Direct'){
-            afterSelect = usernameAutocomplete;
+            afterSelect = 
+            <Fragment 
+                errorMessage="Username empty"
+                validate={() => this.state.selectedUser !== null}
+            >
+                {usernameAutocomplete}
+            </Fragment>;
         }
         else {
             afterSelect = (
-                <Fragment>
+                <Fragment 
+                    validate={() => this.state.members.length > 1}
+                    errorMessage="Group must have at least 2 members"
+                >
                     <TextField 
+                        errorMessage={"Group name must contain at least 4 symbols"}
+                        minLength={4}
                         className="create-chat-input" 
                         variant="outlined" 
                         label="Group name"
@@ -140,18 +166,35 @@ class CreateChatDialog extends React.Component {
         }
 
         return (
-            <Dialog onClose={this.props.onClose} open={this.props.isOpen}>
-                <DialogTitle>Create chat</DialogTitle>
-                <DialogContent>
-                    <Select className="create-chat-input" value={this.state.chatType} variant="outlined" onChange={(event) => this.setState({chatType: event.target.value})}>
-                        <MenuItem value={"Direct"}>Direct</MenuItem>
-                        <MenuItem value={"Group"}>Group</MenuItem>
-                    </Select>
-                    {afterSelect}
-                </DialogContent>
-                <DialogActions>
-                    <Button color="primary" onClick={() => this.submit()}>Create</Button>
-                </DialogActions>
+            <Dialog onClose={() => { this.props.onClose(); this.resetState();}} open={this.props.isOpen}>
+                <Form
+                    onSuccessfulSubmit={() => this.submit()}
+                    onValidationError={errors => this.setState({validationErrors: errors})}
+                >
+                    <DialogTitle>Create chat</DialogTitle>
+                    <DialogContent>
+                        <Select 
+                            className="create-chat-input" 
+                            value={this.state.chatType} 
+                            variant="outlined" 
+                            onChange={(event) => this.setState({
+                                chatType: event.target.value, 
+                                validationErrors: [],
+                                members: [],
+                                selectedUser: null,
+                                groupName: ""
+                            })}
+                        >
+                            <MenuItem value={"Direct"}>Direct</MenuItem>
+                            <MenuItem value={"Group"}>Group</MenuItem>
+                        </Select>
+                        {afterSelect}
+                        <ValidationResult messages={this.state.validationErrors}/>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button color="primary" type="submit">Create</Button>
+                    </DialogActions>  
+                </Form>
             </Dialog>
         );
     }

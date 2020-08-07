@@ -9,6 +9,8 @@ import Link from '@material-ui/core/Link';
 import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import Form from '../../DataValidation/Form';
+import ValidationResult from '../../DataValidation/ValidationResult';
 import { withSnackbar } from 'notistack';
 import './RegisterDialog.css'
 import Api from '../../WebApi/WebApiClient'
@@ -21,12 +23,23 @@ class RegisterDialog extends React.Component {
             username: "",
             password: "",
             confirmPassword: "",
-            errorMessage: null
+            errorMessage: null,
+            validationErrors: []
         };
 
         this.onUsernameChanged = this.onUsernameChanged.bind(this);
         this.onPasswordChanged = this.onPasswordChanged.bind(this);
-        this.onPasswordChanged = this.onConfirmPasswordChanged.bind(this);
+        this.onConfirmPasswordChanged = this.onConfirmPasswordChanged.bind(this);
+    }
+
+    resetState(){
+        this.setState({
+            username: "",
+            password: "",
+            confirmPassword: "",
+            errorMessage: null,
+            validationErrors: []
+        });
     }
 
     onUsernameChanged(event){
@@ -59,7 +72,7 @@ class RegisterDialog extends React.Component {
 
     render() {
       return (
-        <Dialog onClose={this.props.onClose} open={this.props.isOpen}>
+        <Dialog onClose={() => { this.props.onClose(); this.resetState(); }} open={this.props.isOpen}>
             <DialogContent>
                 <Container component="main" maxWidth="xs">
                     <CssBaseline />
@@ -70,50 +83,66 @@ class RegisterDialog extends React.Component {
                         <Typography component="h1" className="text-center" variant="h5">
                             Sign Up
                         </Typography>
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            label="Username"
-                            name="username"
-                            autoFocus
-                            value={this.state.username}
-                            onChange={this.onUsernameChanged}
-                        />
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="password"
-                            label="Password"
-                            type="password"
-                            value={this.state.password}
-                            onChange={this.onPasswordChanged}
-                        />
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="password"
-                            label="Confirm password"
-                            type="password"
-                            value={this.state.confirmPassword}
-                            onChange={this.onConfirmPasswordChanged}
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            className="submit"
-                            onClick={() => this.onLoginClickAsync()}
+
+                        <Form 
+                            onSuccessLogin={() => this.onLoginClickAsync()}
+                            onValidationError={errors => this.setState({validationErrors: errors})}
                         >
-                            Sign Up
-                        </Button>
-                        <Link onClick={() => this.props.onLinkClicked()}>
+                            <TextField
+                                minLength={6}
+                                errorMessage={'Username must contain only latin letters, digits and at least 4 symbols'}
+                                regex={/^[A-z0-9]+$/}
+                                variant="outlined"
+                                margin="normal"
+                                required
+                                fullWidth
+                                label="Username"
+                                name="username"
+                                autoFocus
+                                value={this.state.username}
+                                onChange={this.onUsernameChanged}
+                            />
+                            <TextField
+                                errorMessage={"Password must contain at least 6 symbols"}
+                                minLength={6}
+                                variant="outlined"
+                                margin="normal"
+                                required
+                                fullWidth
+                                name="password"
+                                label="Password"
+                                type="password"
+                                value={this.state.password}
+                                onChange={this.onPasswordChanged}
+                            />
+                            <TextField
+                                errorMessage={"The passwords you entered do not match"}
+                                validate={() => this.state.confirmPassword === this.state.password}
+                                variant="outlined"
+                                margin="normal"
+                                required
+                                fullWidth
+                                name="password"
+                                label="Confirm password"
+                                type="password"
+                                value={this.state.confirmPassword}
+                                onChange={this.onConfirmPasswordChanged}
+                            />
+
+                            <ValidationResult messages={this.state.validationErrors}/>
+
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                color="primary"
+                                className="submit"
+                            >
+                                Sign Up
+                            </Button>
+                        </Form>
+                        
+                        <Link onClick={() => { this.props.onLinkClicked(); this.resetState(); }}>
                             <Typography className="text-center">
                                 Already have an account? Sign in
                             </Typography>

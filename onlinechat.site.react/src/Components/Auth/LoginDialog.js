@@ -12,6 +12,8 @@ import Container from '@material-ui/core/Container';
 import { withSnackbar } from 'notistack';
 import './LoginDialog.css'
 import Api from '../../WebApi/WebApiClient'
+import Form from '../../DataValidation/Form';
+import ValidationResult from '../../DataValidation/ValidationResult';
 
 class LoginDialog extends React.Component {
     constructor(props){
@@ -20,11 +22,21 @@ class LoginDialog extends React.Component {
         this.state = {
             username: "",
             password: "",
-            errorMessage: null
+            errorMessage: null,
+            validationErrors: []
         };
 
         this.onUsernameChanged = this.onUsernameChanged.bind(this);
         this.onPasswordChanged = this.onPasswordChanged.bind(this);
+    }
+
+    resetState(){
+        this.setState({
+            username: "",
+            password: "",
+            errorMessage: null,
+            validationErrors: []
+        });
     }
 
     onUsernameChanged(event){
@@ -53,58 +65,68 @@ class LoginDialog extends React.Component {
 
     render() {
       return (
-        <Dialog onClose={this.props.onClose} open={this.props.isOpen}>
+        <Dialog onClose={() => { this.props.onClose(); this.resetState(); }} open={this.props.isOpen}>
             <DialogContent>
-                <Container component="main" maxWidth="xs">
-                    <CssBaseline />
-                    <div className="paper">
-                        <Avatar className="avatar">
-                        <LockOutlinedIcon />
-                        </Avatar>
-                        <Typography component="h1" className="text-center" variant="h5">
-                        Sign in
-                        </Typography>
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="email"
-                            label="Username"
-                            name="username"
-                            autoFocus
-                            value={this.state.username}
-                            onChange={this.onUsernameChanged}
-                        />
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="password"
-                            label="Password"
-                            type="password"
-                            id="password"
-                            value={this.state.password}
-                            onChange={this.onPasswordChanged}
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            className="submit"
-                            onClick={() => this.onLoginClickAsync()}
-                        >
-                            Sign In
-                        </Button>
-                        <Link onClick={ () => this.props.onLinkClicked()}>
-                            <Typography className="text-center">
-                                Don't have an account? Sign Up
-                            </Typography>
-                        </Link>
-                    </div>
-                </Container>
+                <Form 
+                    onSuccessfulSubmit={() => this.onLoginClickAsync()}
+                    onValidationError={errors => this.setState({validationErrors: errors})}
+                >
+                    <Container component="main" maxWidth="xs">
+                        <CssBaseline />
+                        <div className="paper">
+                            <Avatar className="avatar">
+                                <LockOutlinedIcon />
+                            </Avatar>
+                                <Typography component="h1" className="text-center" variant="h5">
+                                Sign in
+                                </Typography>
+                            <TextField
+                                minLength={6}
+                                errorMessage={'Username must contain only latin letters, digits and at least 4 symbols'}
+                                regex={/^[A-z0-9]+$/}
+                                variant="outlined"
+                                margin="normal"
+                                required
+                                fullWidth
+                                id="email"
+                                label="Username"
+                                name="username"
+                                autoFocus
+                                value={this.state.username}
+                                onChange={this.onUsernameChanged}
+                            />
+                            <TextField
+                                variant="outlined"
+                                margin="normal"
+                                required
+                                fullWidth
+                                name="password"
+                                label="Password"
+                                type="password"
+                                id="password"
+                                value={this.state.password}
+                                onChange={this.onPasswordChanged}
+                            />
+
+                            <ValidationResult messages={this.state.validationErrors}/>
+
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                color="primary"
+                                className="submit"
+                            >
+                                Sign In
+                            </Button>
+                            <Link onClick={ () => { this.props.onLinkClicked(); this.resetState() }}>
+                                <Typography className="text-center">
+                                    Don't have an account? Sign Up
+                                </Typography>
+                            </Link>
+                        </div>
+                    </Container>
+                </Form>
             </DialogContent>
         </Dialog>
       );
