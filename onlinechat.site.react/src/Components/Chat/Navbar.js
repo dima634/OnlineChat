@@ -13,7 +13,8 @@ class Navbar extends React.Component {
         super(props);
 
         this.state = {
-            isCreateChatDialogOpen: false
+            isCreateChatDialogOpen: false,
+            selectedChat: null
         };
     }
 
@@ -22,10 +23,11 @@ class Navbar extends React.Component {
             <Box>
                 <Button className="navbar-create-chat-button" variant="outlined" color="primary" onClick={() => this.setState({ isCreateChatDialogOpen: true })}>New chat</Button>
                 <List component="nav">
-                    {this.props.chats.map((chat) => <ChatLink onChatClick={this.props.onChatSelected} 
+                    {this.props.chats.map((chat) => <ChatLink onChatClick={(chat) => { this.props.onChatSelected(chat); this.setState({selectedChat: chat}); }} 
                                                                 messager={this.props.messager} 
                                                                 key={chat.Id} 
                                                                 chat={chat}
+                                                                selectedChat={this.state.selectedChat}
                                                                 api={this.props.api}/>)}
                 </List>
 
@@ -78,7 +80,11 @@ class ChatLink extends React.Component {
         }
 
         return (
-            <ListItem onClick={() => this.props.onChatClick(this.props.chat.Id)} button>
+            <ListItem 
+                selected={this.props.chat.Id === this.props.selectedChat?.Id}
+                onClick={() => this.props.onChatClick(this.props.chat.Id)}
+                button
+            >
                 <ListItemText primary={chatName}/>
                 <Badge badgeContent={this.state.unreadMessagesCount} color="primary"/>
             </ListItem>

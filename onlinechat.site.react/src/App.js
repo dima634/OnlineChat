@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import './App.css';
-import { Typography, Button } from '@material-ui/core';
+import { Typography, Button, IconButton, Divider } from '@material-ui/core';
 import LoginDialog from './Components/Auth/LoginDialog';
 import { SnackbarProvider } from 'notistack';
 import Api from './WebApi/WebApiClient';
@@ -10,7 +10,9 @@ import InstantMessager from './InstantMessaging/InstantMessager';
 import RegisterDialog from './Components/Auth/RegisterDialog';
 import Navbar from './Components/Chat/Navbar';
 import Chat from './Components/Chat/Chat';
-import Grid from '@material-ui/core/Grid';
+import Drawer from '@material-ui/core/Drawer';
+import MenuIcon from '@material-ui/icons/Menu';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 
 class App extends React.Component {
   constructor(props){
@@ -22,7 +24,8 @@ class App extends React.Component {
       isLoginDialogOpen: true,
       isRegisterDialogOpen: false,
       chats: [],
-      selectedChatId: null
+      selectedChatId: null,
+      sidebarOpen: false
     };
 
     this.onChatCreated = this.onChatCreated.bind(this);
@@ -73,7 +76,8 @@ class App extends React.Component {
       this.messager.onlineAsync();
       this.setState({
         isLoginDialogOpen: false,
-        chats: await Api.instance().getChatsAsync()
+        chats: await Api.instance().getChatsAsync(),
+        sidebarOpen: true
       });
     };
 
@@ -81,10 +85,26 @@ class App extends React.Component {
       chat = <Chat chatId={this.state.selectedChatId} api={Api.instance()} messager={this.messager}/>
     }
 
+    let contentClass = "content";
+    let appbarClass = "appbar";
+
+    if(this.state.sidebarOpen) { 
+      contentClass+=" shift";
+      appbarClass+=" shift";
+    }
+
     return (
       <SnackbarProvider maxSnack={5}>
-        <AppBar position="static">
+        <AppBar className={appbarClass} position="static">
           <Toolbar>
+            <IconButton
+              disabled={this.state.sidebarOpen}
+              color="inherit"
+              edge="start"
+              onClick={() => this.setState({sidebarOpen: true})}
+            >
+              <MenuIcon/>
+            </IconButton>
             <Typography className="title" variant="h6">Online chat</Typography>
             {authBar}
           </Toolbar>
@@ -96,19 +116,32 @@ class App extends React.Component {
             isOpen={this.state.isLoginDialogOpen}
             />
           <RegisterDialog
-            onClose={() => this.setState({isRegisterDialogOpen: false}) } 
+            onClose={() => this.setState({isRegisterDialogOpen: false}) }  
             onLinkClicked={() => this.setState({isRegisterDialogOpen: false, isLoginDialogOpen: true})}
             isOpen={this.state.isRegisterDialogOpen}
           />
         </AppBar>
-        <Grid container className="content">
-          <Grid item xs={1}>
-            <Navbar chats={this.state.chats} api={Api.instance()} messager={this.messager} onChatSelected={(chatId) => this.setState({selectedChatId: chatId})}/>
-          </Grid>
-          <Grid item xs={11}>
-            {chat}
-          </Grid>
-        </Grid>
+
+        <Drawer
+          className="sidebar"
+          variant="persistent"
+          anchor="left"
+          open={this.state.sidebarOpen}
+        >
+          <div className="sidebar-header">
+            <IconButton onClick={() => this.setState({sidebarOpen: false})}>
+              <ChevronLeftIcon/>
+            </IconButton>
+          </div>
+
+          <Divider/>
+          
+          <Navbar chats={this.state.chats} api={Api.instance()} messager={this.messager} onChatSelected={(chatId) => this.setState({selectedChatId: chatId})}/>
+        </Drawer>
+        
+        <main className={contentClass}>
+          {chat}
+        </main>
       </SnackbarProvider>
     );
   }

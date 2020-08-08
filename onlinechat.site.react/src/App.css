@@ -1,10 +1,41 @@
+.appbar {
+    height: 64px;
+    margin-left: auto;
+}
+
+    .appbar.shift {
+        width: calc(100% - 240px);;
+    }
+
+.sidebar {
+    transition: width 2s;
+}
+
+    .sidebar > * {
+        width: 240px;
+    }
+
+.sidebar-header {
+    height: 64px;
+    padding: 8px;
+}
+
+    .sidebar-header > * {
+        float: right;
+    }
+
 .title {
     flex-grow: 1;
 }
 
 .content {
     height: calc(100vh - 64px);
+    margin-left: auto;
 }
+
+    .content.shift {
+        width: calc(100% - 240px);;
+    }
 
 .content > * {
     height: 100%;
