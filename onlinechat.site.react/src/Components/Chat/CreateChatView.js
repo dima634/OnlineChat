@@ -70,8 +70,18 @@ class CreateChatDialog extends React.Component {
 
     render(){
         let afterSelect;
+        let validationProps;
+
+        if(this.state.chatType === 'Direct'){
+            validationProps = {
+                errorMessage: "Username empty",
+                validate: () => this.state.selectedUser !== null
+            };
+        }
+        
         const usernameAutocomplete = (
             <Autocomplete
+                {...validationProps}
                 className="create-chat-autocomplete"
                 options={this.state.suggestedUsernames}
                 loading={this.state.loadingSuggestions}
@@ -96,20 +106,11 @@ class CreateChatDialog extends React.Component {
         );
 
         if(this.state.chatType === 'Direct'){
-            afterSelect = 
-            <Fragment 
-                errorMessage="Username empty"
-                validate={() => this.state.selectedUser !== null}
-            >
-                {usernameAutocomplete}
-            </Fragment>;
+            afterSelect = usernameAutocomplete;
         }
         else {
             afterSelect = (
-                <Fragment 
-                    validate={() => this.state.members.length > 1}
-                    errorMessage="Group must have at least 2 members"
-                >
+                <Fragment>
                     <TextField 
                         errorMessage={"Group name must contain at least 4 symbols"}
                         minLength={4}
@@ -145,8 +146,17 @@ class CreateChatDialog extends React.Component {
                         className="create-chat-input">Add</Button>
                     </Box>
 
-                    <Box display="flex" flexWrap="wrap">
-                        <Chip className="create-chat-chip" color="primary" label={this.props.api.username}/>
+                    <Box 
+                        display="flex" 
+                        flexWrap="wrap"
+                    >
+                        <Chip 
+                            className="create-chat-chip" 
+                            color="primary" 
+                            label={this.props.api.username}
+                            validate={() => this.state.members.length > 1}
+                            errorMessage="Group must have at least 2 members"
+                        />
                         {this.state.members.map(username => 
                             <Chip 
                                 className="create-chat-chip" 
