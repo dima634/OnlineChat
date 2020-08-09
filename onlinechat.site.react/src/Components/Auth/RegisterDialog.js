@@ -54,12 +54,12 @@ class RegisterDialog extends React.Component {
         this.setState({confirmPassword: event.target.value});
     }
 
-    async onLoginClickAsync(){
+    async onRegisterClickAsync(){
         var api = Api.instance();
 
         try {
-            await api.loginAsync(this.state.username, this.state.password);   
-            this.props.onSuccessLogin();
+            await api.registerAsync(this.state.username, this.state.password, this.state.confirmPassword);   
+            this.props.onSuccessRegistration();
         } catch (error) {
             this.props.enqueueSnackbar(error.errorMessage, { 
                 variant: 'error',
@@ -85,7 +85,7 @@ class RegisterDialog extends React.Component {
                         </Typography>
 
                         <Form 
-                            onSuccessLogin={() => this.onLoginClickAsync()}
+                            onSuccessfulSubmit={() => this.onRegisterClickAsync()}
                             onValidationError={errors => this.setState({validationErrors: errors})}
                         >
                             <TextField

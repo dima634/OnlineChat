@@ -228,6 +228,7 @@ class Chat extends React.Component {
                     api={this.props.api} 
                     onMessageInViewport={(message) => {
                         if(!message.IsReadByCurrentUser && message.Author !== this.props.api.username) {
+                            message.IsReadByCurrentUser = true;
                             this.props.messager.markMessageAsReadAsync(message.Id, this.props.chatId);
                         }
                     }}

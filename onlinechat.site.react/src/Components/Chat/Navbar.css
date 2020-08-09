@@ -3,6 +3,5 @@
 }
 
 .MuiListItem-button.Mui-selected {
-    background-color: #0077c2!important;
-    color: white!important;
+    background-color: rgb(63 81 181 / 19%)!important;
 }

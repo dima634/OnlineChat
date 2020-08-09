@@ -116,6 +116,7 @@ class App extends React.Component {
             isOpen={this.state.isLoginDialogOpen}
             />
           <RegisterDialog
+            onSuccessRegistration={() => this.setState({isRegisterDialogOpen: false, isLoginDialogOpen:true})}
             onClose={() => this.setState({isRegisterDialogOpen: false}) }  
             onLinkClicked={() => this.setState({isRegisterDialogOpen: false, isLoginDialogOpen: true})}
             isOpen={this.state.isRegisterDialogOpen}

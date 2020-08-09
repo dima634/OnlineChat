@@ -23,7 +23,7 @@ class Navbar extends React.Component {
             <Box>
                 <Button className="navbar-create-chat-button" variant="outlined" color="primary" onClick={() => this.setState({ isCreateChatDialogOpen: true })}>New chat</Button>
                 <List component="nav">
-                    {this.props.chats.map((chat) => <ChatLink onChatClick={(chat) => { this.props.onChatSelected(chat); this.setState({selectedChat: chat}); }} 
+                    {this.props.chats.map((chat) => <ChatLink onChatClick={(chatId) => { this.setState({selectedChat: chat}); this.props.onChatSelected(chatId  ); }} 
                                                                 messager={this.props.messager} 
                                                                 key={chat.Id} 
                                                                 chat={chat}
