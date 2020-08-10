@@ -39,6 +39,13 @@ namespace OnlineChat.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("SignalR", cfg => cfg.AllowCredentials().AllowAnyHeader().AllowAnyMethod().SetIsOriginAllowed(host => true));
+                options.AddPolicy("WebApi", cfg => cfg.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+                options.DefaultPolicyName = "WebApi";
+            });
+
             services.AddSignalR()
                     .AddNewtonsoftJsonProtocol(opt =>
                     {
@@ -117,15 +124,9 @@ namespace OnlineChat.WebApi
 
             app.UseHttpsRedirection();
 
-            app.UseCors(builder =>
-            {
-                builder.AllowCredentials()
-                       .AllowAnyMethod()
-                       .AllowAnyHeader()
-                       .SetIsOriginAllowed(origin => true);
-            });
-
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthentication();
 
@@ -133,8 +134,8 @@ namespace OnlineChat.WebApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
-                endpoints.MapHub<InstantMessager>("/instantmessaging");
+                endpoints.MapControllers().RequireCors("WebApi");
+                endpoints.MapHub<InstantMessager>("/instantmessaging").RequireCors("SignalR");
             });
         }
     }

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Options;
@@ -30,7 +31,7 @@ namespace OnlineChat.WebApi.Controllers
             _userService = userService;
             _appSettings = appSettings.Value;
         }
-
+        
         [HttpPost]
         [Route("register")]
         public ActionResult Register([FromBody] RegisterModel model)
