@@ -22,7 +22,7 @@ namespace OnlineChat.Dtos.BindingModels
     {
         [Required]
         [MinLength(4, ErrorMessage = "Username must contain at least 4 symbols")]
-        [RegularExpression("[A-z]+", ErrorMessage = "Username must contain only latin letters")]
+        [RegularExpression("[A-z0-9]+", ErrorMessage = "Username must contain only latin letters")]
         public string WithUser { get; set; }
     }
 }
