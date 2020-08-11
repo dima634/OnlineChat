@@ -53,6 +53,18 @@ class Chat extends React.Component {
         this.setState({messageText: event.target.value});
     }
 
+    onInput(event) {
+        if(event.key === '\n'){
+            event.preventDefault();
+            this.setState({messageText: event.target.value + "\n"});
+        }
+
+        if(event.key === 'Enter') {
+            event.preventDefault();
+            this.sendOrEditMessage();
+        }
+    }
+
     onMessageReceived(args){
         if(args.chatId === this.props.chatId) {
             this.state.messages.unshift(args.message);
@@ -240,6 +252,7 @@ class Chat extends React.Component {
 
                 <div className="chat-message-input-box">
                     <TextField 
+                        onKeyPress={(event) => this.onInput(event)}
                         onChange={this.handleChange}
                         value={this.state.messageText} 
                         size="medium" 
