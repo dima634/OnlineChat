@@ -90,7 +90,7 @@ class RegisterDialog extends React.Component {
                         >
                             <TextField
                                 minLength={6}
-                                errorMessage={'Username must contain only latin letters, digits and at least 4 symbols'}
+                                errorMessage={'Username must contain only latin letters, digits and at least 6 symbols'}
                                 regex={/^[A-z0-9]+$/}
                                 variant="outlined"
                                 margin="normal"
