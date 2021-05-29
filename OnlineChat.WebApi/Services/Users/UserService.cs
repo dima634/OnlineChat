@@ -3,10 +3,8 @@ using OnlineChat.WebApi.Models.Repos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace OnlineChat.WebApi.Services
 {
@@ -37,7 +35,7 @@ namespace OnlineChat.WebApi.Services
 
         public User Register(string nickname, string password)
         {
-            if(string.IsNullOrWhiteSpace(nickname) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(nickname) || string.IsNullOrWhiteSpace(password))
             {
                 throw new ApplicationException("Nickname and password is required.");
             }

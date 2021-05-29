@@ -8,6 +8,8 @@ namespace OnlineChat.WebApi.Services
 {
     public interface IInstantMessaging
     {
+        Task ChatMembers(List<ChatMember> members);
+        Task UserStatusChanged(string username, string newStatus);
         Task MessageSent(MessageViewModel message, int chatId);
         Task MessageEdited(MessageViewModel message, int chatId);
         Task MessageDeleted(int messageId, int chatId, bool forAll, string author);

@@ -1,56 +1,54 @@
-﻿using Newtonsoft.Json;
-using OnlineChat.WebApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using OnlineChat.Dtos.ViewModels;
-using OnlineChat.WebApi.Services.InstantMessaging;
-using System.Runtime.InteropServices.WindowsRuntime;
 using OnlineChat.WebApi.Models.Repos;
+using OnlineChat.WebApi.Services.InstantMessaging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OnlineChat.WebApi.Services
 {
     [Authorize]
     public class InstantMessager : Hub<IInstantMessaging>
     {
-        private ISubscriptionManager _subscriptionManager;
+        private IChatManager _chatManager;
+        private IChatService _chatService;
         private IMessageReadStatusRepo _messageReadStatusRepo;
 
-        public InstantMessager(ISubscriptionManager subscriptionManager, IMessageReadStatusRepo messageReadStatusRepo)
+        public InstantMessager(IChatManager chatManager, IChatService chatService, IMessageReadStatusRepo messageReadStatusRepo)
         {
-            _subscriptionManager = subscriptionManager;
+            _chatManager = chatManager;
             _messageReadStatusRepo = messageReadStatusRepo;
+            _chatService = chatService;
         }
-
-        //public void Subscribe(int chatId)
-        //    => _subscriptionManager.Subscribe(Context.User.Identity.Name, chatId, Context.ConnectionId);
-
-        //public void UnSubscribe()
-        //    => _subscriptionManager.UnSubscribe(Context.ConnectionId);
 
         public void MarkMessageAsRead(int messageId, int chatId)
         {
             _messageReadStatusRepo.MarkRead(Context.User.Identity.Name, messageId);
-            Clients.Clients(_subscriptionManager.GetActiveChatMembers(chatId).ToList()).MessageRead(messageId, chatId, Context.User.Identity.Name);
+            Clients.Clients(_chatManager.GetActiveChatMembers(chatId).ToList()).MessageRead(messageId, chatId, Context.User.Identity.Name);
+        }
+
+        public void GetChatMembers(int chatId)
+        {
+            if (_chatService.IsChatMember(chatId, Context.User.Identity.Name))
+            {
+                var members = _chatManager.GetChatMembers(chatId);
+                Clients.Caller.ChatMembers(members);
+            }
         }
 
         public override Task OnConnectedAsync()
         {
-            _subscriptionManager.UserOnline(Context.User.Identity.Name, Context.ConnectionId);
+            var notify = _chatManager.UserOnline(Context.User.Identity.Name, Context.ConnectionId);
+            Clients.Clients(notify.ToList()).UserStatusChanged(Context.User.Identity.Name, "Online");
+
             return Task.CompletedTask;
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            _subscriptionManager.UserOffline(Context.ConnectionId);
+            var notify = _chatManager.UserOffline(Context.ConnectionId);
+            Clients.Clients(notify.ToList()).UserStatusChanged(Context.User.Identity.Name, "Offline");
             return Task.CompletedTask;
         }
     }

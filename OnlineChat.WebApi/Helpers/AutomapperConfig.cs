@@ -29,6 +29,7 @@ namespace OnlineChat.WebApi.Helpers
                         var type = m.Content switch
                         {
                             TextContent _ => ContentType.Text,
+                            FileContent _ => ContentType.File,
                             _ => throw new ApplicationException($"Unknown content type: {m.Content.GetType().FullName}")
                         };
 
@@ -36,9 +37,10 @@ namespace OnlineChat.WebApi.Helpers
                     }))
                     .ForMember(vm => vm.Content, opt => opt.MapFrom((m, vm) =>
                     {
-                        var content = m.Content switch
+                        object content = m.Content switch
                         {
                             TextContent textContent => textContent.Text,
+                            FileContent fileContent => new { fileContent.Filename, fileContent.Url },
                             _ => throw new ApplicationException($"Unknown content type: {m.Content.GetType().FullName}")
                         };
 
@@ -49,9 +51,10 @@ namespace OnlineChat.WebApi.Helpers
                     .ForMember(m => m.SentOn, opt => opt.MapFrom(tm => DateTime.Now))
                     .ForMember(m => m.Content, opt => opt.MapFrom((model, message) =>
                     {
-                        MessageContent content = ContentType.Parse<ContentType>(model.ContentType) switch
+                        MessageContent content = Enum.Parse<ContentType>(model.ContentType) switch
                         {
                             ContentType.Text => new TextContent() { Text = model.Content.ToString() },
+                            ContentType.File => new FileContent(),
                             _ => throw new ApplicationException($"Unsupported content type: {model.ContentType}")
                         };
 

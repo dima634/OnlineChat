@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Options;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OnlineChat.Dtos.BindingModels;
 using OnlineChat.WebApi.Helpers;
 using OnlineChat.WebApi.Services;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace OnlineChat.WebApi.Controllers
 {
@@ -31,7 +23,7 @@ namespace OnlineChat.WebApi.Controllers
             _userService = userService;
             _appSettings = appSettings.Value;
         }
-        
+
         [HttpPost]
         [Route("register")]
         public ActionResult Register([FromBody] RegisterModel model)
@@ -40,7 +32,7 @@ namespace OnlineChat.WebApi.Controllers
             {
                 _userService.Register(model.Username, model.Password);
             }
-            catch(ApplicationException ex)
+            catch (ApplicationException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -54,7 +46,7 @@ namespace OnlineChat.WebApi.Controllers
         {
             var user = _userService.Authenticate(model.Username, model.Password);
 
-            if(user == null)
+            if (user == null)
             {
                 return BadRequest(new { message = "Username or password is incorrect" });
             }

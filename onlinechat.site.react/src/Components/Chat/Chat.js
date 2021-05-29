@@ -10,8 +10,11 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import './Chat.css';
 import TextContent from './TextContent';
+import AttachmentIcon from '@material-ui/icons/Attachment';
 
 class Chat extends React.Component {
+    fileInput = React.createRef();
+
     constructor(props){
         super(props);
 
@@ -19,6 +22,7 @@ class Chat extends React.Component {
 
         this.state = {
             messages: [],
+            attachment: null,
             messageText: "",
             editMessage: null,
             replyTo: null,
@@ -119,13 +123,14 @@ class Chat extends React.Component {
         let model = {
             Content: message,
             ContentType: "Text",
-            ReplyTo: this.state.replyTo?.Id
+            ReplyTo: this.state.replyTo ? this.state.replyTo.Id  : ""
         };
 
         this.props.api.sendMessageAsync(model, this.props.chatId);
         this.setState({messageText: "", replyTo: null});
     }
 
+    
     sendOrEditMessage(){
         if(this.state.editMessage !== null){
             this.editMessage();
@@ -133,6 +138,32 @@ class Chat extends React.Component {
         else{
             this.sendMessage();
         }
+    }
+
+    sendAttachment(){
+        // if(this.state.editMessage !== null){
+        //     this.editMessage();
+        // }
+        // else{
+        //     this.sendMessage();
+        // }
+
+        this.fileInput.current.click();
+    }
+
+    filePicked(){
+        let file = this.fileInput.current.files[0];
+
+        if(!file) return;
+
+        let model = {
+            Content: file,
+            ContentType: "File",
+            ReplyTo: this.state.replyTo ? this.state.replyTo.Id  : ""
+        };
+
+        this.props.api.sendMessageAsync(model, this.props.chatId);
+        this.setState({attachment: null, replyTo: null});
     }
 
     onContextMenu(ev, message){
@@ -262,6 +293,10 @@ class Chat extends React.Component {
                         multiline
                         autoFocus
                     />
+                    <IconButton onClick={() => this.sendAttachment()} color="primary">
+                        <AttachmentIcon/>
+                        <input ref={this.fileInput} onChange={() => this.filePicked()} hidden type="file"></input>
+                    </IconButton>
                     <IconButton onClick={() => this.sendOrEditMessage()} color="primary">
                         <SendIcon/>
                     </IconButton>

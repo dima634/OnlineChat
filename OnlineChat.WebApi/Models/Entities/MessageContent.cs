@@ -19,4 +19,13 @@ namespace OnlineChat.WebApi.Models
 
         public override string ToString() => Text;
     }
+
+    public class FileContent : MessageContent
+    {
+        public string Filename { get; set; }
+
+        public Guid FileId { get; set; }
+
+        public string Url { get; set; }
+    }
 }

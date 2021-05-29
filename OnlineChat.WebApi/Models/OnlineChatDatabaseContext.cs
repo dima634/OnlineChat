@@ -12,6 +12,7 @@ namespace OnlineChat.WebApi.Models
         public DbSet<ReplyMessage> ReplyMessages { get; set; }
         public DbSet<MessageContent> MessageContents { get; set; }
         public DbSet<TextContent> TextContents { get; set; }
+        public DbSet<FileContent> FileContents { get; set; }
         public DbSet<MessageReadStatus> MessagesReadStatuse { get; set; }
 
         public OnlineChatDatabaseContext(DbContextOptions options) : base(options)

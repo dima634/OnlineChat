@@ -6,6 +6,7 @@ namespace OnlineChat.Dtos
 {
     public enum ContentType
     {
-        Text
+        Text,
+        File
     }
 }

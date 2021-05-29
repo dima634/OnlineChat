@@ -18,6 +18,7 @@ using OnlineChat.WebApi.Services;
 using OnlineChat.WebApi.Helpers;
 using Microsoft.AspNetCore.SignalR;
 using OnlineChat.WebApi.Services.InstantMessaging;
+using OnlineChat.Dtos;
 
 namespace OnlineChat.WebApi.Controllers
 {
@@ -30,9 +31,9 @@ namespace OnlineChat.WebApi.Controllers
         private IMapper _mapper;
         private IUserService _userService;
         private IHubContext<InstantMessager, IInstantMessaging> _hub;
-        private ISubscriptionManager _subscriptionManager;
+        private IChatManager _subscriptionManager;
 
-        public ChatController (IChatService chatService, IUserService userService, IMapper mapper, IHubContext<InstantMessager, IInstantMessaging> hub, ISubscriptionManager subscriptionManager)
+        public ChatController (IChatService chatService, IUserService userService, IMapper mapper, IHubContext<InstantMessager, IInstantMessaging> hub, IChatManager subscriptionManager)
         {
             _chatService = chatService;
             _mapper = mapper;
@@ -44,7 +45,7 @@ namespace OnlineChat.WebApi.Controllers
         [HttpPost]
         [Route("direct/{username?}/messages/send")]
         [Route("{chatId?}/messages/send")]
-        public ActionResult SendMessage([FromBody] MessageModel model, [FromRoute] int chatId, [FromRoute] string username)
+        public ActionResult SendMessage([FromForm] MessageModel model, [FromRoute] int chatId, [FromRoute] string username)
         {
             MessageViewModel response;
 
@@ -53,19 +54,20 @@ namespace OnlineChat.WebApi.Controllers
                 chatId = _chatService.GetDirectChat(User.Identity.Name, username).Id;
             }
 
+            var author = _userService.GetUser(User.Identity.Name);
+            var message = _chatService.SendMessage(model.Content,
+                                                   Enum.Parse<ContentType>(model.ContentType),
+                                                   chatId,
+                                                   author,
+                                                   model.ReplyTo);
+
             if (model.ReplyTo == null)
             {
-                var message = _mapper.Map<Message>(model);
-                message.Author = _userService.GetUser(User.Identity.Name);
-                message = _chatService.SendMessage(message, chatId);
                 response = _mapper.Map<MessageViewModel>(message);
             }
             else
             {
-                var reply = _mapper.Map<ReplyMessage>(model);
-                reply.Author = _userService.GetUser(User.Identity.Name);
-                reply = _chatService.ReplyToMessage(reply, chatId, model.ReplyTo.Value);
-                response = _mapper.Map<ReplyMessageViewModel>(reply);
+                response = _mapper.Map<ReplyMessageViewModel>(message);
             }
 
             var subIds = _subscriptionManager.GetActiveChatMembers(chatId);

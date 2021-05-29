@@ -1,8 +1,11 @@
 ﻿using AutoMapper.Configuration.Annotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore.Internal;
+using OnlineChat.Dtos;
 using OnlineChat.WebApi.Models;
 using OnlineChat.WebApi.Models.Repos;
+using OnlineChat.WebApi.Services.FileStorage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +19,15 @@ namespace OnlineChat.WebApi.Services
         private IUserRepo _userRepo;
         private IMessageRepo _messageRepo;
         private IMessageReadStatusRepo _messageReadStatusRepo;
+        private IFileStorage _fileStorage;
 
-        public ChatService(IChatRepo chatRepo, IUserRepo userRepo, IMessageRepo messageRepo, IMessageReadStatusRepo messageReadStatusRepo)
+        public ChatService(IChatRepo chatRepo, IUserRepo userRepo, IMessageRepo messageRepo, IMessageReadStatusRepo messageReadStatusRepo, IFileStorage fileStorage)
         {
             _chatRepo = chatRepo;
             _userRepo = userRepo;
             _messageRepo = messageRepo;
             _messageReadStatusRepo = messageReadStatusRepo;
+            _fileStorage = fileStorage;
         }
 
         public DirectChat CreateDirectChat(string participant1, string participant2)
@@ -125,6 +130,9 @@ namespace OnlineChat.WebApi.Services
         public Chat GetChatByMessageId(int messageId)
             => _messageRepo.GetMessage(messageId).Chat;
 
+        public List<User> GetChatMembers(int chatId)
+            => _chatRepo.GetChatMembers(chatId);
+
         public List<Message> GetChatMessagesByOffset(int chatId, string username, int offset, int resultCount)
         {
             var messages = _messageRepo.GetMessages(chatId);
@@ -194,12 +202,8 @@ namespace OnlineChat.WebApi.Services
 
         public ReplyMessage ReplyToMessage(ReplyMessage message, int chatId, int replyTo)
         {
-            var chat = _chatRepo.GetOne(chatId);
             message.ReplyTo = _messageRepo.GetOne(replyTo);
-            chat.Messages.Add(message);
-            _chatRepo.Save(chat);
-            message = _messageRepo.GetMessage(message.Id) as ReplyMessage;
-            return message;
+            return SendMessage(message, chatId) as ReplyMessage;
         }
 
         public Message SendMessage(Message message, int chatId)
@@ -209,6 +213,41 @@ namespace OnlineChat.WebApi.Services
             _chatRepo.Save(chat);
 
             return message;
+        }
+
+        public Message SendMessage(object content, ContentType type, int chatId, User author, int? replyTo)
+        {
+            MessageContent messageContent;
+            switch (type)
+            {
+                case ContentType.Text:
+                    messageContent = new TextContent()
+                    {
+                        Text = content.ToString()
+                    };
+                    break;
+
+                case ContentType.File:
+                    var file = content as IFormFile;
+                    var guid = Guid.NewGuid();
+                    var url = _fileStorage.Save(guid.ToString(), file.OpenReadStream());
+                    messageContent = new FileContent()
+                    {
+                        FileId = guid,
+                        Filename = file.FileName,
+                        Url = url
+                    };
+                    break;
+
+                default:
+                    throw new Exception("Unsupported content");
+            }
+
+            Message message = replyTo == null ? new Message() : new ReplyMessage() { ReplyTo = _messageRepo.GetMessage(replyTo.Value) };
+            message.Author = author;
+            message.Content = messageContent;
+            message.SentOn = DateTime.Now;
+            return SendMessage(message, chatId);
         }
     }
 

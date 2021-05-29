@@ -3,7 +3,7 @@ let BASE_ADDRESS = null;
 if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
     BASE_ADDRESS = "https://localhost:44305/api/";
 } else {
-    BASE_ADDRESS = "https://onlinechatwebapi.azurewebsites.net/api/";
+    BASE_ADDRESS = "https://volodiaapi.azurewebsites.net";
 }
 
 class Api {
@@ -65,7 +65,16 @@ class Api {
     }
 
     async sendMessageAsync(message, chatId) {
-        const response = await this.postAsync(`chat/${chatId}/messages/send`, message);
+        const form_data = new FormData();
+
+        for (let key in message ) {
+            form_data.append(key, message[key]);
+        }
+
+        const params = this.requestParams('post');
+        params.body = form_data;
+        delete params.headers["Content-Type"];
+        const response = await fetch(BASE_ADDRESS + `chat/${chatId}/messages/send`, params);
         this.ensureOk(response);
     }
 

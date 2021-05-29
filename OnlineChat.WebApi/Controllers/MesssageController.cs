@@ -22,9 +22,9 @@ namespace OnlineChat.WebApi.Controllers
         private IChatService _chatService;
         private IMapper _mapper;
         private IHubContext<InstantMessager, IInstantMessaging> _hub;
-        private ISubscriptionManager _subscriptionManager;
+        private IChatManager _subscriptionManager;
 
-        public MessageController(IChatService chatService, IMapper mapper, IHubContext<InstantMessager, IInstantMessaging> hub, ISubscriptionManager subscriptionManager)
+        public MessageController(IChatService chatService, IMapper mapper, IHubContext<InstantMessager, IInstantMessaging> hub, IChatManager subscriptionManager)
         {
             _chatService = chatService;
             _mapper = mapper;

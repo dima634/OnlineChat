@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -23,6 +23,7 @@ using OnlineChat.WebApi.Helpers;
 using OnlineChat.WebApi.Models;
 using OnlineChat.WebApi.Models.Repos;
 using OnlineChat.WebApi.Services;
+using OnlineChat.WebApi.Services.FileStorage;
 using OnlineChat.WebApi.Services.InstantMessaging;
 
 namespace OnlineChat.WebApi
@@ -101,8 +102,9 @@ namespace OnlineChat.WebApi
                     });
 
             services.AddTransient<IUserService, UserService>()
+                    .AddTransient<IFileStorage, FileStorage>()
                     .AddTransient<IChatService, ChatService>()
-                    .AddScoped<ISubscriptionManager, SubscriptionManager>()
+                    .AddScoped<IChatManager, ChatManager>()
                     .AddScoped<IUserRepo, UserRepo>()
                     .AddScoped<IChatRepo, ChatRepo>()
                     .AddScoped<IMessageReadStatusRepo, MessageReadStatusRepo>()

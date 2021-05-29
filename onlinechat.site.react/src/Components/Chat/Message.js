@@ -3,6 +3,7 @@ import './Message.css'
 import DoneIcon from '@material-ui/icons/Done';
 import DoneAllIcon from '@material-ui/icons/DoneAll';
 import TextContent from './TextContent'
+import FileContent from './FileContent'
 import handleViewport from 'react-in-viewport';
 
 class Message extends React.Component {
@@ -13,10 +14,12 @@ class Message extends React.Component {
     }
 
     renderContent(message){
-        if(message.ContentType === 'Text'){
+        if (message.ContentType === 'Text') {
             return <TextContent text={message.Content}/>
-        }
-        else {
+        } else if (message.ContentType === 'File') {
+            console.log(message);
+            return <FileContent url={message.Content.Url} filename={message.Content.Filename}/>
+        } else {
             throw Error('Unknown content type');
         }
     }
@@ -29,10 +32,9 @@ class Message extends React.Component {
         let reply;
 
         if(this.props.message.ReplyTo) {
-            if(this.props.message.ReplyTo == null){
+            if (this.props.message.ReplyTo == null) {
                 reply = <p>Deleted</p>
-            }
-            else{
+            } else {
                 reply = (
                     <div className="message-reply">
                         {this.renderContent(this.props.message.ReplyTo)}
